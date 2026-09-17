@@ -1,0 +1,45 @@
+{
+  "lastId": 5,
+  "words": [
+    {
+      "id": 1,
+      "word": "developer",
+      "translation": "dasturchi",
+      "createdAt": 1789652594751,
+      "updatedAt": 1789652594751,
+      "source": "api"
+    },
+    {
+      "id": 2,
+      "word": "computer",
+      "translation": "kompyuter",
+      "createdAt": 1789652594751,
+      "updatedAt": 1789652594751,
+      "source": "api"
+    },
+    {
+      "id": 3,
+      "word": "language",
+      "translation": "til",
+      "createdAt": 1789652594751,
+      "updatedAt": 1789652594751,
+      "source": "api"
+    },
+    {
+      "id": 4,
+      "word": "apple",
+      "translation": "olma",
+      "createdAt": 1789651369121,
+      "updatedAt": 1789651369121,
+      "source": "client"
+    },
+    {
+      "id": 5,
+      "word": "good",
+      "translation": "yaxshi",
+      "createdAt": 1789651436964,
+      "updatedAt": 1789651436964,
+      "source": "client"
+    }
+  ]
+}

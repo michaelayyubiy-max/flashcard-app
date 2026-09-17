@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: flashcards-app
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20.0.0
+      - key: BOT_TOKEN
+        value: 8877215841:AAFtI7g99tYjJaEc0_DaSmF_3r5vh7yjwO8
