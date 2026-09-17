@@ -83,7 +83,7 @@ app.post('/api/sync', (req, res) => {
 // Serve frontend static build if exists (Render / Production)
 if (fs.existsSync(DIST_DIR)) {
   app.use(express.static(DIST_DIR));
-  app.get('*', (req, res, next) => {
+  app.use((req, res, next) => {
     if (req.path.startsWith('/api/')) return next();
     res.sendFile(path.join(DIST_DIR, 'index.html'));
   });

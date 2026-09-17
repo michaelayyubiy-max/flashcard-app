@@ -161,12 +161,10 @@ export async function startBot() {
     console.warn('Failed to set bot commands:', e.message);
   }
 
-  // Polling loop
+  // Polling loop with error recovery
   while (isPolling) {
     try {
-      const res = await fetch(`${TELEGRAM_API}/getUpdates?offset=${lastUpdateId + 1}&timeout=30`, {
-        signal: AbortSignal.timeout(40000)
-      });
+      const res = await fetch(`${TELEGRAM_API}/getUpdates?offset=${lastUpdateId + 1}&timeout=15`);
       const data = await res.json();
 
       if (data.ok && Array.isArray(data.result)) {
@@ -174,13 +172,15 @@ export async function startBot() {
           lastUpdateId = Math.max(lastUpdateId, update.update_id);
           await handleUpdate(update);
         }
+      } else if (data.error_code === 409) {
+        // Conflict - another instance is polling, wait a bit
+        console.warn('409 Conflict: boshqa bot instansiyasi ishlayapti, kutilmoqda...');
+        await new Promise(r => setTimeout(r, 5000));
       } else {
         await new Promise(r => setTimeout(r, 2000));
       }
     } catch (err) {
-      if (err.name !== 'TimeoutError') {
-        console.error('Bot polling error:', err.message);
-      }
+      // Network hiccup or pause
       await new Promise(r => setTimeout(r, 3000));
     }
   }
