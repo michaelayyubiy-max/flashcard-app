@@ -66,18 +66,48 @@ export function renderAddWord(app, router) {
 
             <!-- Category Selector & Add Category Button -->
             <div class="form-group">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                <label class="form-label" style="margin-bottom:0;">Bo'lim (Kategoriya)</label>
-                <button type="button" id="btn-create-cat" style="font-size:12px;color:var(--primary);background:none;border:none;cursor:pointer;font-weight:600;display:flex;align-items:center;gap:4px;">
-                  <span>➕</span> Yangi bo'lim
+              <label class="form-label">Bo'lim (Kategoriya)</label>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <select class="form-input" id="select-category" style="cursor:pointer;flex:1;">
+                  ${renderCategoryOptions(allCategories, currentFormCategory)}
+                </select>
+                <button type="button" id="btn-create-cat" style="padding:10px 14px;border-radius:10px;border:1.5px dashed var(--primary);color:var(--primary);background:rgba(214,147,88,0.08);font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;display:flex;align-items:center;gap:6px;">
+                  <span>➕</span> Bo'lim qo'shish
                 </button>
               </div>
-              <select class="form-input" id="select-category" style="cursor:pointer;">
-                ${renderCategoryOptions(allCategories, currentFormCategory)}
-              </select>
             </div>
 
             <button class="btn-save" id="btn-save">💾 Saqlash</button>
+
+            <!-- Category Management Card -->
+            <div class="category-card" style="margin-top:20px;padding:14px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <div style="display:flex;align-items:center;gap:6px;font-weight:600;font-size:14px;color:var(--text);">
+                  <span>📁</span> Bo'limlar boshqaruvi (${allCategories.length} ta)
+                </div>
+                <button type="button" id="btn-create-cat-quick" style="padding:5px 12px;border-radius:8px;background:var(--primary);color:#fff;border:none;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;">
+                  <span>+</span> Yangi bo'lim
+                </button>
+              </div>
+
+              <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                ${allCategories.map(cat => {
+                  const count = allWords.filter(w => (w.category || 'Umumiy').trim().toLowerCase() === cat.trim().toLowerCase()).length;
+                  const isDefault = cat.toLowerCase() === 'umumiy';
+                  return `
+                    <div style="display:inline-flex;align-items:center;padding:6px 12px;border-radius:10px;background:var(--bg);border:1px solid var(--border);font-size:13px;">
+                      <span style="font-weight:600;color:var(--text);margin-right:8px;">📁 ${escapeHtml(cat)}</span>
+                      <span style="font-size:11px;color:var(--text-secondary);background:var(--bg-card);padding:2px 8px;border-radius:10px;margin-right:${isDefault ? '0' : '10px'};">${count} ta so'z</span>
+                      ${!isDefault ? `
+                        <button class="btn-delete-category" data-cat="${escapeHtml(cat)}" title="Bo'limni 2 xil usulda o'chirish" style="background:rgba(231,76,60,0.12);color:#e74c3c;border:none;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;">
+                          🗑 O'chirish
+                        </button>
+                      ` : ''}
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
 
             <!-- Word List Section -->
             <div class="word-list">
@@ -176,10 +206,12 @@ export function renderAddWord(app, router) {
         currentFormCategory = e.target.value;
       });
 
-      // Create category button
-      document.getElementById('btn-create-cat').addEventListener('click', () => {
-        showCreateCategoryModal();
-      });
+      // Create category buttons (both main and quick)
+      const openCatModal = () => showCreateCategoryModal();
+      const btnCreateCat = document.getElementById('btn-create-cat');
+      if (btnCreateCat) btnCreateCat.addEventListener('click', openCatModal);
+      const btnCreateCatQuick = document.getElementById('btn-create-cat-quick');
+      if (btnCreateCatQuick) btnCreateCatQuick.addEventListener('click', openCatModal);
 
       // Search input
       document.getElementById('search-input').addEventListener('input', async (e) => {
@@ -200,8 +232,8 @@ export function renderAddWord(app, router) {
         });
       });
 
-      // Delete category click
-      document.querySelectorAll('.cat-chip-del-btn').forEach(btn => {
+      // Delete category clicks (both chip button and management card button)
+      document.querySelectorAll('.cat-chip-del-btn, .btn-delete-category').forEach(btn => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
           const catName = btn.dataset.cat;
