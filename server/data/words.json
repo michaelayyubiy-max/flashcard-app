@@ -1,6 +1,15 @@
 {
-  "lastId": 13,
+  "lastId": 14,
   "words": [
+    {
+      "id": 14,
+      "word": "book",
+      "translation": "kitob",
+      "category": "Umumiy",
+      "createdAt": 1789812263134,
+      "updatedAt": 1789812263134,
+      "source": "client"
+    },
     {
       "id": 4,
       "word": "iron over",

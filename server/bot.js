@@ -3,6 +3,7 @@ import { addBatchWords, getAllWords, getWordCount, deleteWord, deleteAllWords } 
 
 const BOT_TOKEN = process.env.BOT_TOKEN || '8877215841:AAFtI7g99tYjJaEc0_DaSmF_3r5vh7yjwO8';
 const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
+export const WEB_APP_URL = process.env.RENDER_EXTERNAL_URL || process.env.WEB_APP_URL || 'https://flashcard-app-tluu.onrender.com';
 
 let isPolling = false;
 let lastUpdateId = 0;
@@ -30,6 +31,18 @@ export async function sendMessage(chatId, text, options = {}) {
   });
 }
 
+export function getMainKeyboard(webAppUrl = WEB_APP_URL) {
+  const url = (webAppUrl || WEB_APP_URL).replace(/\/$/, '');
+  return {
+    keyboard: [
+      [{ text: "📱 FlashCards Ilovasini ochish", web_app: { url } }],
+      [{ text: "📚 So'zlar ro'yxati" }, { text: "📊 Statistika" }],
+      [{ text: "🗑 So'zni o'chirish" }]
+    ],
+    resize_keyboard: true
+  };
+}
+
 // Main Telegram Update Handler (Used by both Webhook and Polling)
 export async function handleTelegramUpdate(update) {
   if (!update) return;
@@ -50,36 +63,33 @@ export async function handleTelegramUpdate(update) {
   if (text === '/start' || text === '/help') {
     const total = getWordCount();
     const welcome = `👋 <b>Assalomu alaykum!</b>\n\n` +
-      `Bu bot sizning <b>FlashCards</b> saytingiz va ilovangiz bilan bitta serverda 24/7 ishlaydi.\n\n` +
+      `Bu bot sizning <b>FlashCards</b> ilovangiz bilan bitta umumiy serverda 24/7 ishlaydi.\n\n` +
+      `📱 <b>Telegram ichida ilovani ochish:</b>\n` +
+      `Pastdagi <b>"📱 FlashCards Ilovasini ochish"</b> tugmasi yoki ekranning chap pastki burchagidagi Menyu orqali ilovani to'g'ridan-to'g'ri Telegram ichida ochishingiz mumkin!\n\n` +
+      `🔄 <b>To'liq sinxron:</b>\n` +
+      `Siz bu yerda so'z qo'shsangiz, sayt va Telegram ilovasida ham <b>bir xil darhol ishlaydi</b>.\n\n` +
       `📝 <b>So'z qo'shish qulay va oson:</b>\n` +
       `• <code>apple olma</code>\n` +
       `• <code>apple - olma</code>\n` +
-      `• <code>apple : olma</code>\n` +
-      `• Ikki qatorda:\n<code>apple\nolma</code>\n\n` +
-      `• Yoki bir nechta so'zni birdan yuboring:\n` +
-      `<code>apple - olma\nbook - kitob\ncar - mashina</code>\n\n` +
+      `• Ikki qatorda:\n<code>apple\nolma</code>\n` +
+      `• Bir nechta so'z:\n<code>apple - olma\nbook - kitob</code>\n\n` +
       `🗑 <b>So'zni o'chirish:</b>\n` +
-      `• <code>/delete apple</code> (aniq so'zni o'chirish)\n` +
-      `• <code>/clear</code> (barcha so'zlarni tozalash)\n` +
-      `• Yoki shunchaki <b>/delete</b> deb yozing — bot sizga tanlash uchun tugmachalarni chiqaradi!\n\n` +
+      `• <code>/delete apple</code>\n` +
+      `• Yoki pastdagi "🗑 So'zni o'chirish" tugmasini bosing\n\n` +
       `📊 Jami bazadagi so'zlar: <b>${total} ta</b>`;
 
-    const keyboard = {
-      keyboard: [
-        [{ text: "📚 So'zlar ro'yxati" }, { text: "📊 Statistika" }],
-        [{ text: "🗑 So'zni o'chirish" }]
-      ],
-      resize_keyboard: true
-    };
-
-    await sendMessage(chatId, welcome, { reply_markup: keyboard });
+    await sendMessage(chatId, welcome, {
+      reply_markup: getMainKeyboard()
+    });
     return;
   }
 
   // /clear or /deleteall
   if (text === '/clear' || text === '/deleteall') {
     deleteAllWords();
-    await sendMessage(chatId, `🗑 <b>Barcha so'zlar serverdan butunlay tozalandi!</b>\n📊 Jami so'zlar: <b>0 ta</b>`);
+    await sendMessage(chatId, `🗑 <b>Barcha so'zlar serverdan butunlay tozalandi!</b>\n📊 Jami so'zlar: <b>0 ta</b>`, {
+      reply_markup: getMainKeyboard()
+    });
     return;
   }
 
@@ -175,15 +185,28 @@ export async function handleTelegramUpdate(update) {
     const reply = `✅ So'z <b>${actionText}</b>!\n\n` +
       `📖 <b>${escapeHtml(item.word)}</b> ➔ ${escapeHtml(item.translation)}\n\n` +
       `📊 Jami so'zlar: <b>${total} ta</b>\n` +
-      `🌐 Saytda ham darhol ko'rishingiz mumkin!`;
-    await sendMessage(chatId, reply);
+      `🌐 Ilova va saytda ham darhol yangilandi!`;
+    await sendMessage(chatId, reply, {
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: "🚀 FlashCards Ilovasida ochish", web_app: { url: WEB_APP_URL } }]
+        ]
+      }
+    });
   } else {
     let reply = `✅ <b>${parsed.length} ta</b> so'z muvaffaqiyatli saqlandi!\n\n`;
     parsed.forEach((item, idx) => {
       reply += `${idx + 1}. <b>${escapeHtml(item.word)}</b> ➔ ${escapeHtml(item.translation)}\n`;
     });
-    reply += `\n📊 Jami so'zlar: <b>${total} ta</b>`;
-    await sendMessage(chatId, reply);
+    reply += `\n📊 Jami so'zlar: <b>${total} ta</b>\n` +
+      `🌐 Ilova va saytda ham darhol yangilandi!`;
+    await sendMessage(chatId, reply, {
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: "🚀 FlashCards Ilovasida ochish", web_app: { url: WEB_APP_URL } }]
+        ]
+      }
+    });
   }
 }
 
@@ -228,6 +251,28 @@ async function handleCallbackQuery(query) {
   }
 }
 
+// Configure permanent Telegram Menu Button (Mini App)
+export async function setupBotMenuButton(serverUrl = WEB_APP_URL) {
+  const url = (serverUrl || WEB_APP_URL).replace(/\/$/, '');
+  const res = await telegramApi('setChatMenuButton', {
+    menu_button: {
+      type: 'web_app',
+      text: '📱 FlashCards',
+      web_app: {
+        url: url
+      }
+    }
+  });
+
+  if (res && res.ok) {
+    console.log(`📱 Telegram WebApp Menu Button o'rnatildi: ${url}`);
+    return true;
+  } else {
+    console.warn('⚠️ Telegram Menu Button o\'rnatishda ogohlantirish:', res?.description || res);
+    return false;
+  }
+}
+
 // Set Webhook for production 24/7 reliability on Render
 export async function setBotWebhook(serverUrl) {
   const webhookUrl = `${serverUrl.replace(/\/$/, '')}/api/telegram-webhook`;
@@ -241,6 +286,8 @@ export async function setBotWebhook(serverUrl) {
 
   if (res && res.ok) {
     console.log('✅ Telegram Webhook muvaffaqiyatli o\'rnatildi!');
+    // Also configure Menu Button
+    await setupBotMenuButton(serverUrl);
     return true;
   } else {
     console.warn('⚠️ Webhook o\'rnatishda xatolik:', res?.description || res);

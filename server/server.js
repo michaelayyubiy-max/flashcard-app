@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { getAllWords, addWord, addBatchWords, deleteWord, deleteAllWords, getWordCount, syncClientWords, getAllCategories, addCategory, deleteCategory } from './db.js';
-import { handleTelegramUpdate, setBotWebhook, startBotPolling } from './bot.js';
+import { handleTelegramUpdate, setBotWebhook, startBotPolling, setupBotMenuButton } from './bot.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -186,6 +186,11 @@ if (fs.existsSync(DIST_DIR)) {
 // Start Server & Connect Telegram Bot
 app.listen(PORT, '0.0.0.0', async () => {
   console.log(`🚀 FlashCards All-in-One Server running at http://0.0.0.0:${PORT}`);
+
+  // Configure Telegram Mini App menu button
+  try {
+    await setupBotMenuButton(SERVER_PUBLIC_URL);
+  } catch (e) {}
 
   // In production / Render, register Webhook
   if (process.env.NODE_ENV === 'production' || process.env.RENDER || SERVER_PUBLIC_URL.includes('onrender.com')) {

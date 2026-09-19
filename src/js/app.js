@@ -33,6 +33,22 @@ export function showToast(message) {
 }
 
 // ═══════════════════════════════════════
+// Telegram Web App Init
+// ═══════════════════════════════════════
+if (window.Telegram?.WebApp) {
+  try {
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+    if (typeof tg.setHeaderColor === 'function') tg.setHeaderColor('#d69358');
+    if (typeof tg.setBackgroundColor === 'function') tg.setBackgroundColor('#f8f9fa');
+    if (typeof tg.enableClosingConfirmation === 'function') tg.enableClosingConfirmation();
+  } catch (e) {
+    console.warn('Telegram WebApp init warning:', e);
+  }
+}
+
+// ═══════════════════════════════════════
 // App Init
 // ═══════════════════════════════════════
 const app = document.getElementById('app');

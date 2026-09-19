@@ -213,13 +213,13 @@ export function getLastSyncTime() {
 }
 
 export function setupAutoSync(onSyncComplete) {
-  // Sync on startup
+  // Sync immediately on startup
   setTimeout(async () => {
     const res = await syncWithServer();
     if (res.success && onSyncComplete) {
       onSyncComplete(res);
     }
-  }, 1000);
+  }, 500);
 
   // Sync when coming back online
   window.addEventListener('online', async () => {
@@ -229,7 +229,26 @@ export function setupAutoSync(onSyncComplete) {
     }
   });
 
-  // Periodic background sync every 30 seconds if online
+  // Sync immediately when returning to tab/app (e.g. after adding word in Telegram bot)
+  document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState === 'visible' && navigator.onLine) {
+      const res = await syncWithServer();
+      if (res.success && onSyncComplete) {
+        onSyncComplete(res);
+      }
+    }
+  });
+
+  window.addEventListener('focus', async () => {
+    if (navigator.onLine) {
+      const res = await syncWithServer();
+      if (res.success && onSyncComplete) {
+        onSyncComplete(res);
+      }
+    }
+  });
+
+  // Periodic background sync every 10 seconds if online
   setInterval(async () => {
     if (navigator.onLine) {
       const res = await syncWithServer();
@@ -237,5 +256,5 @@ export function setupAutoSync(onSyncComplete) {
         onSyncComplete(res);
       }
     }
-  }, 30000);
+  }, 10000);
 }
