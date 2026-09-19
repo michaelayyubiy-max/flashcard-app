@@ -147,6 +147,8 @@ function persistDeletedWords() {
   } catch (err) {
     console.error('Error saving deleted_words.json:', err);
   }
+}
+
 const CATEGORIES_FILE = path.join(DATA_DIR, 'categories.json');
 
 function loadCategoriesData() {
@@ -336,10 +338,6 @@ export function addBatchWords(items, source = 'bot') {
       syncToPostgres(newWord);
     }
   }
-
-  persistData();
-  return { added, updated, total: inMemoryData.words.length };
-}
 
   persistData();
   return { added, updated, total: inMemoryData.words.length };
