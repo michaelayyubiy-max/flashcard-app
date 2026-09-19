@@ -56,6 +56,24 @@ export async function deleteWordsByText(wordTexts = []) {
   }
 }
 
+export const SAMPLE_BLOCKLIST = ['developer', 'computer', 'language', 'apple', 'good'];
+
+export async function clearAllWords() {
+  await db.words.clear();
+}
+
+export async function cleanupSampleWords() {
+  const all = await getAllWords();
+  const toDelete = all.filter(w => SAMPLE_BLOCKLIST.includes(w.word.toLowerCase()));
+  if (toDelete.length > 0) {
+    await db.transaction('rw', db.words, async () => {
+      for (const item of toDelete) {
+        await db.words.delete(item.id);
+      }
+    });
+  }
+}
+
 export async function getWord(id) {
   return await db.words.get(id);
 }
@@ -86,7 +104,10 @@ export async function searchWords(query) {
 export async function bulkUpsertWords(serverWords, recentlyDeleted = []) {
   if (!Array.isArray(serverWords)) return { added: 0, updated: 0, total: await getWordCount() };
 
-  const deletedSet = new Set((recentlyDeleted || []).map(w => String(w).trim().toLowerCase()));
+  const deletedSet = new Set([
+    ...SAMPLE_BLOCKLIST,
+    ...(recentlyDeleted || []).map(w => String(w).trim().toLowerCase())
+  ]);
   const existingWords = await getAllWords();
   const existingMap = new Map(existingWords.map(w => [w.word.toLowerCase(), w]));
 

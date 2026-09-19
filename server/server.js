@@ -3,7 +3,7 @@ import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-import { getAllWords, addWord, addBatchWords, deleteWord, getWordCount, syncClientWords, getRecentlyDeleted } from './db.js';
+import { getAllWords, addWord, addBatchWords, deleteWord, deleteAllWords, getWordCount, syncClientWords, getRecentlyDeleted } from './db.js';
 import { handleTelegramUpdate, setBotWebhook, startBotPolling } from './bot.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -72,10 +72,24 @@ app.post('/api/words', (req, res) => {
   }
 });
 
+// DELETE ALL words
+app.delete('/api/words/all', (req, res) => {
+  try {
+    deleteAllWords();
+    res.json({ success: true, message: 'Barcha so\'zlar o\'chirildi', count: 0 });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // DELETE word by ID or Word in URL
 app.delete('/api/words/:idOrWord', (req, res) => {
   try {
     const { idOrWord } = req.params;
+    if (idOrWord === 'all') {
+      deleteAllWords();
+      return res.json({ success: true, message: 'Barcha so\'zlar o\'chirildi', count: 0 });
+    }
     const deleted = deleteWord(idOrWord);
     res.json({ success: true, deleted, remaining: getWordCount() });
   } catch (err) {

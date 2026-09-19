@@ -1,5 +1,5 @@
 import { parseWordsFromText } from './parser.js';
-import { addBatchWords, getAllWords, getWordCount, deleteWord } from './db.js';
+import { addBatchWords, getAllWords, getWordCount, deleteWord, deleteAllWords } from './db.js';
 
 const BOT_TOKEN = process.env.BOT_TOKEN || '8877215841:AAFtI7g99tYjJaEc0_DaSmF_3r5vh7yjwO8';
 const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
@@ -60,6 +60,7 @@ export async function handleTelegramUpdate(update) {
       `<code>apple - olma\nbook - kitob\ncar - mashina</code>\n\n` +
       `🗑 <b>So'zni o'chirish:</b>\n` +
       `• <code>/delete apple</code> (aniq so'zni o'chirish)\n` +
+      `• <code>/clear</code> (barcha so'zlarni tozalash)\n` +
       `• Yoki shunchaki <b>/delete</b> deb yozing — bot sizga tanlash uchun tugmachalarni chiqaradi!\n\n` +
       `📊 Jami bazadagi so'zlar: <b>${total} ta</b>`;
 
@@ -72,6 +73,13 @@ export async function handleTelegramUpdate(update) {
     };
 
     await sendMessage(chatId, welcome, { reply_markup: keyboard });
+    return;
+  }
+
+  // /clear or /deleteall
+  if (text === '/clear' || text === '/deleteall') {
+    deleteAllWords();
+    await sendMessage(chatId, `🗑 <b>Barcha so'zlar serverdan butunlay tozalandi!</b>\n📊 Jami so'zlar: <b>0 ta</b>`);
     return;
   }
 

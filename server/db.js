@@ -117,8 +117,37 @@ async function syncToPostgres(wordObj, isDelete = false) {
   }
 }
 
-// Cache of recently deleted words (lowercased) so syncing clients know they were deleted
-let recentlyDeleted = new Set();
+const DELETED_FILE = path.join(DATA_DIR, 'deleted_words.json');
+
+// Default unwanted sample words that must never reappear
+const SAMPLE_BLOCKLIST = ['developer', 'computer', 'language', 'apple', 'good'];
+
+function loadDeletedWords() {
+  try {
+    const set = new Set(SAMPLE_BLOCKLIST);
+    if (fs.existsSync(DELETED_FILE)) {
+      const raw = fs.readFileSync(DELETED_FILE, 'utf8');
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr)) {
+        arr.forEach(w => set.add(String(w).trim().toLowerCase()));
+      }
+    }
+    return set;
+  } catch (err) {
+    console.error('Error loading deleted_words.json:', err);
+    return new Set(SAMPLE_BLOCKLIST);
+  }
+}
+
+let recentlyDeleted = loadDeletedWords();
+
+function persistDeletedWords() {
+  try {
+    fs.writeFileSync(DELETED_FILE, JSON.stringify(Array.from(recentlyDeleted), null, 2), 'utf8');
+  } catch (err) {
+    console.error('Error saving deleted_words.json:', err);
+  }
+}
 
 export function getAllWords() {
   return inMemoryData.words;
@@ -130,6 +159,18 @@ export function getWordCount() {
 
 export function getRecentlyDeleted() {
   return Array.from(recentlyDeleted);
+}
+
+export function deleteAllWords() {
+  const all = [...inMemoryData.words];
+  all.forEach(w => recentlyDeleted.add(w.word.toLowerCase()));
+  inMemoryData.words = [];
+  persistData();
+  persistDeletedWords();
+  if (pool) {
+    pool.query('DELETE FROM words').catch(e => console.error('Postgres clear error:', e.message));
+  }
+  return true;
 }
 
 export function addWord(wordText, translationText, source = 'bot') {
@@ -234,7 +275,10 @@ export function deleteWord(idOrWord) {
   }
 
   const deleted = inMemoryData.words.length < initialLen;
-  if (deleted) persistData();
+  if (deleted) {
+    persistData();
+    persistDeletedWords();
+  }
   return deleted;
 }
 
@@ -302,6 +346,7 @@ export function syncClientWords(clientWords = [], deletedWords = []) {
 
   if (addedCount > 0 || updatedCount > 0 || deletedCount > 0) {
     persistData();
+    persistDeletedWords();
   }
 
   return {

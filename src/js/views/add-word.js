@@ -1,5 +1,5 @@
-import { addWord, updateWord, deleteWord, getAllWords, searchWords } from '../db.js';
-import { syncWithServer, deleteWordFromServer } from '../sync.js';
+import { addWord, updateWord, deleteWord, getAllWords, searchWords, cleanupSampleWords, clearAllWords } from '../db.js';
+import { syncWithServer, deleteWordFromServer, deleteAllWordsEverywhere } from '../sync.js';
 import { showToast } from '../app.js';
 
 export function renderAddWord(app, router) {
@@ -7,6 +7,8 @@ export function renderAddWord(app, router) {
   let allWords = [];
 
   return async () => {
+    // Auto-clean any legacy sample words (developer, computer, language, apple, good)
+    await cleanupSampleWords();
     allWords = await getAllWords();
     editingId = null;
 
@@ -39,9 +41,9 @@ export function renderAddWord(app, router) {
                   <input type="text" class="search-input" id="search-input" placeholder="Qidirish..." autocomplete="off">
                 </div>
               </div>
-              <div class="word-list-title">
-                So'zlar ro'yxati
-                <span id="list-count">${allWords.length} ta</span>
+              <div class="word-list-title" style="display:flex;justify-content:space-between;align-items:center;">
+                <span>So'zlar ro'yxati <span id="list-count" style="font-size:14px;color:var(--text-secondary);font-weight:normal;">(${allWords.length} ta)</span></span>
+                ${allWords.length > 0 ? `<button id="btn-clear-all" style="font-size:12px;color:#e74c3c;background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;background:rgba(231,76,60,0.08);">🗑 Hammasini tozalash</button>` : ''}
               </div>
               <div id="word-list-items">
                 ${renderWordList(allWords)}
@@ -76,7 +78,59 @@ export function renderAddWord(app, router) {
         attachWordListeners();
       });
 
+      // Clear all words
+      const clearAllBtn = document.getElementById('btn-clear-all');
+      if (clearAllBtn) {
+        clearAllBtn.addEventListener('click', () => {
+          showClearAllModal();
+        });
+      }
+
       attachWordListeners();
+    }
+
+    function showClearAllModal() {
+      const overlay = document.createElement('div');
+      overlay.className = 'modal-overlay';
+      overlay.innerHTML = `
+        <div class="modal">
+          <div class="modal-title">Barchasini tozalash</div>
+          <div class="modal-text">Haqiqatan ham barcha (${allWords.length} ta) so'zlarni butunlay o'chirmoqchimisiz?</div>
+          <div class="modal-buttons">
+            <button class="modal-btn cancel" id="modal-clear-cancel">Bekor</button>
+            <button class="modal-btn confirm" id="modal-clear-confirm" style="background:#e74c3c;color:white;">Hammasini o'chirish</button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(overlay);
+      requestAnimationFrame(() => overlay.classList.add('active'));
+
+      document.getElementById('modal-clear-cancel').addEventListener('click', () => {
+        overlay.classList.remove('active');
+        setTimeout(() => overlay.remove(), 300);
+      });
+
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          overlay.classList.remove('active');
+          setTimeout(() => overlay.remove(), 300);
+        }
+      });
+
+      document.getElementById('modal-clear-confirm').addEventListener('click', async () => {
+        await clearAllWords();
+        await deleteAllWordsEverywhere();
+        overlay.classList.remove('active');
+        setTimeout(() => overlay.remove(), 300);
+        showToast('🗑 Barcha so\'zlar tozalandi');
+
+        allWords = [];
+        document.getElementById('word-list-items').innerHTML = renderWordList([]);
+        document.getElementById('list-count').textContent = '0 ta';
+        const clrBtn = document.getElementById('btn-clear-all');
+        if (clrBtn) clrBtn.remove();
+      });
     }
 
     async function handleSave() {

@@ -32,9 +32,34 @@ export function getCustomApiUrl() {
   return localStorage.getItem('api_server_url') || '';
 }
 
+// Sample blocklist that should never be resurrected
+export const SAMPLE_BLOCKLIST = ['developer', 'computer', 'language', 'apple', 'good'];
+
 // ═══════════════════════════════════════
-// Pending Deleted Words Queue (Offline Support)
+// Permanently Deleted Words & Queue (Offline Support)
 // ═══════════════════════════════════════
+export function getPermanentlyDeleted() {
+  try {
+    const raw = localStorage.getItem('permanently_deleted_words');
+    const list = raw ? JSON.parse(raw) : [];
+    const set = new Set([...SAMPLE_BLOCKLIST, ...list.map(w => String(w).trim().toLowerCase())]);
+    return Array.from(set);
+  } catch (e) {
+    return [...SAMPLE_BLOCKLIST];
+  }
+}
+
+export function markAsPermanentlyDeleted(wordText) {
+  if (!wordText) return;
+  const list = getPermanentlyDeleted();
+  const normalized = wordText.trim().toLowerCase();
+  if (!list.includes(normalized)) {
+    list.push(normalized);
+    localStorage.setItem('permanently_deleted_words', JSON.stringify(list));
+  }
+  queueDeletedWord(normalized);
+}
+
 function getDeletedQueue() {
   try {
     const raw = localStorage.getItem('pending_deleted_words');
@@ -68,7 +93,7 @@ export function removeDeletedQueueItem(wordText) {
 
 // Immediately delete a word on the server
 export async function deleteWordFromServer(wordText, wordId = null) {
-  queueDeletedWord(wordText);
+  markAsPermanentlyDeleted(wordText);
 
   try {
     const apiUrl = getApiUrl();
@@ -90,6 +115,19 @@ export async function deleteWordFromServer(wordText, wordId = null) {
   return false;
 }
 
+// Delete ALL words everywhere (Server + Local)
+export async function deleteAllWordsEverywhere() {
+  try {
+    const apiUrl = getApiUrl();
+    await fetch(`${apiUrl}/words/all`, {
+      method: 'DELETE',
+      signal: AbortSignal.timeout(6000)
+    });
+  } catch (err) {
+    console.warn('Failed to clear server words:', err.message);
+  }
+}
+
 // ═══════════════════════════════════════
 // Full Two-Way Sync
 // ═══════════════════════════════════════
@@ -102,13 +140,25 @@ export async function syncWithServer() {
   try {
     const apiUrl = getApiUrl();
     const localWords = await getAllWords();
-    const pendingDeletions = getDeletedQueue();
+    const permDeleted = getPermanentlyDeleted();
+    const permSet = new Set(permDeleted);
+
+    // Filter out any deleted/blocked words from being pushed to server
+    const validLocalWords = localWords.filter(w => !permSet.has(w.word.toLowerCase()));
+
+    // If any deleted words still exist in local Dexie, delete them immediately
+    const staleLocal = localWords.filter(w => permSet.has(w.word.toLowerCase()));
+    if (staleLocal.length > 0) {
+      await deleteWordsByText(staleLocal.map(w => w.word));
+    }
+
+    const pendingDeletions = Array.from(new Set([...getDeletedQueue(), ...permDeleted]));
 
     const response = await fetch(`${apiUrl}/sync`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        clientWords: localWords,
+        clientWords: validLocalWords,
         deletedWords: pendingDeletions
       }),
       signal: AbortSignal.timeout(10000)
@@ -120,17 +170,16 @@ export async function syncWithServer() {
 
     const data = await response.json();
     if (data.success && Array.isArray(data.serverWords)) {
-      // Clear processed deletions
-      if (pendingDeletions.length > 0) {
-        saveDeletedQueue([]);
-      }
+      saveDeletedQueue([]);
 
-      // If server has recently deleted words, delete them locally too
+      // Merge server recently deleted with local permanent deletions
       if (Array.isArray(data.recentlyDeleted) && data.recentlyDeleted.length > 0) {
+        data.recentlyDeleted.forEach(w => markAsPermanentlyDeleted(w));
         await deleteWordsByText(data.recentlyDeleted);
       }
 
-      const upsertResult = await bulkUpsertWords(data.serverWords, data.recentlyDeleted || []);
+      const allDeleted = getPermanentlyDeleted();
+      const upsertResult = await bulkUpsertWords(data.serverWords, allDeleted);
       localStorage.setItem('last_sync_timestamp', Date.now().toString());
 
       return {

@@ -1,10 +1,11 @@
-import { getWordCount } from '../db.js';
+import { getWordCount, cleanupSampleWords } from '../db.js';
 import { exportToJSON, importFromJSON } from '../db.js';
 import { syncWithServer, getLastSyncTime } from '../sync.js';
 import { showToast } from '../app.js';
 
 export function renderHome(app, router) {
   return async () => {
+    await cleanupSampleWords();
     let count = await getWordCount();
 
     app.innerHTML = `
