@@ -190,13 +190,9 @@ export async function searchWords(query) {
   );
 }
 
-export async function bulkUpsertWords(serverWords, recentlyDeleted = []) {
+export async function bulkUpsertWords(serverWords) {
   if (!Array.isArray(serverWords)) return { added: 0, updated: 0, total: await getWordCount() };
 
-  const deletedSet = new Set([
-    ...SAMPLE_BLOCKLIST,
-    ...(recentlyDeleted || []).map(w => String(w).trim().toLowerCase())
-  ]);
   const existingWords = await getAllWords();
   const existingMap = new Map(existingWords.map(w => [w.word.toLowerCase(), w]));
 
@@ -204,9 +200,9 @@ export async function bulkUpsertWords(serverWords, recentlyDeleted = []) {
   let updated = 0;
 
   await db.transaction('rw', db.words, async () => {
-    // Delete any words that are in deletedSet
+    // Delete any legacy sample words if any remain
     for (const [key, item] of existingMap.entries()) {
-      if (deletedSet.has(key)) {
+      if (SAMPLE_BLOCKLIST.includes(key)) {
         await db.words.delete(item.id);
         existingMap.delete(key);
       }
@@ -215,7 +211,7 @@ export async function bulkUpsertWords(serverWords, recentlyDeleted = []) {
     for (const sw of serverWords) {
       if (!sw.word || !sw.translation) continue;
       const lower = sw.word.toLowerCase();
-      if (deletedSet.has(lower)) continue;
+      if (SAMPLE_BLOCKLIST.includes(lower)) continue;
 
       const existing = existingMap.get(lower);
 

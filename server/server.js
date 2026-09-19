@@ -3,7 +3,7 @@ import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-import { getAllWords, addWord, addBatchWords, deleteWord, deleteAllWords, getWordCount, syncClientWords, getRecentlyDeleted, getAllCategories, addCategory, deleteCategory } from './db.js';
+import { getAllWords, addWord, addBatchWords, deleteWord, deleteAllWords, getWordCount, syncClientWords, getAllCategories, addCategory, deleteCategory } from './db.js';
 import { handleTelegramUpdate, setBotWebhook, startBotPolling } from './bot.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -24,7 +24,6 @@ app.get('/api/health', (req, res) => {
     status: 'ok',
     wordsCount: getWordCount(),
     categoriesCount: getAllCategories().length,
-    recentlyDeletedCount: getRecentlyDeleted().length,
     bot: '@flashcardsuzbot',
     publicUrl: SERVER_PUBLIC_URL,
     timestamp: Date.now()

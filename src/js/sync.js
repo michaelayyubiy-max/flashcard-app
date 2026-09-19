@@ -37,27 +37,16 @@ export const SAMPLE_BLOCKLIST = ['developer', 'computer', 'language', 'apple', '
 
 // ═══════════════════════════════════════
 // Permanently Deleted Words & Queue (Offline Support)
-// ═══════════════════════════════════════
+// Clean up legacy permanently_deleted_words cache
+try { localStorage.removeItem('permanently_deleted_words'); } catch (_) {}
+
 export function getPermanentlyDeleted() {
-  try {
-    const raw = localStorage.getItem('permanently_deleted_words');
-    const list = raw ? JSON.parse(raw) : [];
-    const set = new Set([...SAMPLE_BLOCKLIST, ...list.map(w => String(w).trim().toLowerCase())]);
-    return Array.from(set);
-  } catch (e) {
-    return [...SAMPLE_BLOCKLIST];
-  }
+  return [...SAMPLE_BLOCKLIST];
 }
 
 export function markAsPermanentlyDeleted(wordText) {
   if (!wordText) return;
-  const list = getPermanentlyDeleted();
-  const normalized = wordText.trim().toLowerCase();
-  if (!list.includes(normalized)) {
-    list.push(normalized);
-    localStorage.setItem('permanently_deleted_words', JSON.stringify(list));
-  }
-  queueDeletedWord(normalized);
+  queueDeletedWord(wordText.trim().toLowerCase());
 }
 
 function getDeletedQueue() {
@@ -197,14 +186,7 @@ export async function syncWithServer() {
         }
       }
 
-      // Merge server recently deleted with local permanent deletions
-      if (Array.isArray(data.recentlyDeleted) && data.recentlyDeleted.length > 0) {
-        data.recentlyDeleted.forEach(w => markAsPermanentlyDeleted(w));
-        await deleteWordsByText(data.recentlyDeleted);
-      }
-
-      const allDeleted = getPermanentlyDeleted();
-      const upsertResult = await bulkUpsertWords(data.serverWords, allDeleted);
+      const upsertResult = await bulkUpsertWords(data.serverWords);
       localStorage.setItem('last_sync_timestamp', Date.now().toString());
 
       return {

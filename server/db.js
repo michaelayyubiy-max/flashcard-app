@@ -117,36 +117,10 @@ async function syncToPostgres(wordObj, isDelete = false) {
   }
 }
 
-const DELETED_FILE = path.join(DATA_DIR, 'deleted_words.json');
-
-// Default unwanted sample words that must never reappear
-const SAMPLE_BLOCKLIST = ['developer', 'computer', 'language', 'apple', 'good'];
-
-function loadDeletedWords() {
-  try {
-    const set = new Set(SAMPLE_BLOCKLIST);
-    if (fs.existsSync(DELETED_FILE)) {
-      const raw = fs.readFileSync(DELETED_FILE, 'utf8');
-      const arr = JSON.parse(raw);
-      if (Array.isArray(arr)) {
-        arr.forEach(w => set.add(String(w).trim().toLowerCase()));
-      }
-    }
-    return set;
-  } catch (err) {
-    console.error('Error loading deleted_words.json:', err);
-    return new Set(SAMPLE_BLOCKLIST);
-  }
-}
-
-let recentlyDeleted = loadDeletedWords();
-
-function persistDeletedWords() {
-  try {
-    fs.writeFileSync(DELETED_FILE, JSON.stringify(Array.from(recentlyDeleted), null, 2), 'utf8');
-  } catch (err) {
-    console.error('Error saving deleted_words.json:', err);
-  }
+// Remove legacy deleted_words.json cache file if present
+const legacyDeletedFile = path.join(DATA_DIR, 'deleted_words.json');
+if (fs.existsSync(legacyDeletedFile)) {
+  try { fs.unlinkSync(legacyDeletedFile); } catch (_) {}
 }
 
 const CATEGORIES_FILE = path.join(DATA_DIR, 'categories.json');
@@ -204,7 +178,9 @@ export function deleteCategory(name, deleteWordsAlso = false) {
     // 1-Variant: Delete words also
     const toDelete = inMemoryData.words.filter(w => (w.category || 'Umumiy').toLowerCase() === target.toLowerCase());
     affectedCount = toDelete.length;
-    toDelete.forEach(w => recentlyDeleted.add(w.word.toLowerCase()));
+    for (const w of toDelete) {
+      syncToPostgres(w.id, true);
+    }
     inMemoryData.words = inMemoryData.words.filter(w => (w.category || 'Umumiy').toLowerCase() !== target.toLowerCase());
   } else {
     // 2-Variant: Preserve words, move to 'Umumiy'
@@ -218,7 +194,6 @@ export function deleteCategory(name, deleteWordsAlso = false) {
   }
 
   persistData();
-  persistDeletedWords();
   return { success: true, affectedCount };
 }
 
@@ -235,16 +210,9 @@ export function getWordCount() {
   return inMemoryData.words.length;
 }
 
-export function getRecentlyDeleted() {
-  return Array.from(recentlyDeleted);
-}
-
 export function deleteAllWords() {
-  const all = [...inMemoryData.words];
-  all.forEach(w => recentlyDeleted.add(w.word.toLowerCase()));
   inMemoryData.words = [];
   persistData();
-  persistDeletedWords();
   if (pool) {
     pool.query('DELETE FROM words').catch(e => console.error('Postgres clear error:', e.message));
   }
@@ -257,8 +225,6 @@ export function addWord(wordText, translationText, category = 'Umumiy', source =
   const trimmedCat = (category || 'Umumiy').trim();
   if (!trimmedWord || !trimmedTrans) return null;
 
-  // If this word was recently deleted, unmark it
-  recentlyDeleted.delete(trimmedWord.toLowerCase());
   if (trimmedCat && trimmedCat.toLowerCase() !== 'umumiy') {
     addCategory(trimmedCat);
   }
@@ -306,7 +272,6 @@ export function addBatchWords(items, source = 'bot') {
     const trimmedCat = (item.category || 'Umumiy').trim();
     if (!trimmedWord || !trimmedTrans) continue;
 
-    recentlyDeleted.delete(trimmedWord.toLowerCase());
     if (trimmedCat && trimmedCat.toLowerCase() !== 'umumiy') {
       addCategory(trimmedCat);
     }
@@ -345,21 +310,13 @@ export function addBatchWords(items, source = 'bot') {
 
 export function deleteWord(idOrWord) {
   const initialLen = inMemoryData.words.length;
-  let removedWord = null;
 
   if (typeof idOrWord === 'number' || (!isNaN(Number(idOrWord)) && String(idOrWord).trim() !== '')) {
     const targetId = Number(idOrWord);
-    const target = inMemoryData.words.find(w => w.id === targetId);
-    if (target) {
-      removedWord = target.word.toLowerCase();
-      recentlyDeleted.add(removedWord);
-    }
     inMemoryData.words = inMemoryData.words.filter(w => w.id !== targetId);
     syncToPostgres(targetId, true);
   } else {
     const targetWord = String(idOrWord).trim().toLowerCase();
-    removedWord = targetWord;
-    recentlyDeleted.add(targetWord);
     inMemoryData.words = inMemoryData.words.filter(w => w.word.toLowerCase() !== targetWord);
     syncToPostgres(targetWord, true);
   }
@@ -367,7 +324,6 @@ export function deleteWord(idOrWord) {
   const deleted = inMemoryData.words.length < initialLen;
   if (deleted) {
     persistData();
-    persistDeletedWords();
   }
   return deleted;
 }
@@ -385,12 +341,11 @@ export function syncClientWords(clientWords = [], deletedWords = [], clientCateg
     }
   }
 
-  // Process client deletions first
+  // Process client deletions
   if (Array.isArray(deletedWords) && deletedWords.length > 0) {
     for (const delItem of deletedWords) {
       if (!delItem) continue;
       const target = String(delItem).trim().toLowerCase();
-      recentlyDeleted.add(target);
       const before = inMemoryData.words.length;
       inMemoryData.words = inMemoryData.words.filter(w => {
         if (typeof delItem === 'number' && w.id === delItem) return false;
@@ -403,16 +358,11 @@ export function syncClientWords(clientWords = [], deletedWords = [], clientCateg
     }
   }
 
-  // Process client additions and updates (skip if recently deleted on server)
+  // Process client additions and updates
   for (const cw of clientWords) {
     if (!cw.word || !cw.translation) continue;
     const lower = cw.word.trim().toLowerCase();
     const cat = cw.category || 'Umumiy';
-
-    // If this word was deleted on server, do not re-add it
-    if (recentlyDeleted.has(lower)) {
-      continue;
-    }
 
     if (cat && cat.toLowerCase() !== 'umumiy') {
       addCategory(cat);
@@ -450,13 +400,11 @@ export function syncClientWords(clientWords = [], deletedWords = [], clientCateg
 
   if (addedCount > 0 || updatedCount > 0 || deletedCount > 0) {
     persistData();
-    persistDeletedWords();
   }
 
   return {
     serverWords: getAllWords(),
     categories: getAllCategories(),
-    recentlyDeleted: Array.from(recentlyDeleted),
     serverTimestamp: now,
     stats: { added: addedCount, updated: updatedCount, deleted: deletedCount }
   };
