@@ -162,7 +162,13 @@ export async function getWord(id) {
 }
 
 export async function getAllWords() {
-  return await db.words.orderBy('id').toArray();
+  const words = await db.words.toArray();
+  return words.sort((a, b) => {
+    const timeA = a.createdAt || a.id || 0;
+    const timeB = b.createdAt || b.id || 0;
+    if (timeB !== timeA) return timeB - timeA;
+    return (b.id || 0) - (a.id || 0);
+  });
 }
 
 export async function getWordCount() {

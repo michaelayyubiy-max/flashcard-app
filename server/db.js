@@ -221,7 +221,12 @@ export function deleteCategory(name, deleteWordsAlso = false) {
 }
 
 export function getAllWords() {
-  return inMemoryData.words;
+  return [...inMemoryData.words].sort((a, b) => {
+    const timeA = a.createdAt || a.id || 0;
+    const timeB = b.createdAt || b.id || 0;
+    if (timeB !== timeA) return timeB - timeA;
+    return (b.id || 0) - (a.id || 0);
+  });
 }
 
 export function getWordCount() {
@@ -282,7 +287,7 @@ export function addWord(wordText, translationText, category = 'Umumiy', source =
     source
   };
 
-  inMemoryData.words.push(newWord);
+  inMemoryData.words.unshift(newWord);
   persistData();
   syncToPostgres(newWord);
   return { ...newWord, isNew: true };
@@ -326,7 +331,7 @@ export function addBatchWords(items, source = 'bot') {
         updatedAt: now,
         source
       };
-      inMemoryData.words.push(newWord);
+      inMemoryData.words.unshift(newWord);
       added.push(newWord);
       syncToPostgres(newWord);
     }
@@ -439,7 +444,7 @@ export function syncClientWords(clientWords = [], deletedWords = [], clientCateg
         updatedAt: cw.updatedAt || now,
         source: 'client'
       };
-      inMemoryData.words.push(newWord);
+      inMemoryData.words.unshift(newWord);
       addedCount++;
       syncToPostgres(newWord);
     }
@@ -451,7 +456,7 @@ export function syncClientWords(clientWords = [], deletedWords = [], clientCateg
   }
 
   return {
-    serverWords: inMemoryData.words,
+    serverWords: getAllWords(),
     categories: getAllCategories(),
     recentlyDeleted: Array.from(recentlyDeleted),
     serverTimestamp: now,
