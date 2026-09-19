@@ -759,6 +759,38 @@ a {
   text-align: center;
 }
 
+.range-category-field {
+  margin-bottom: 16px;
+}
+
+.range-category-field label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.range-category-select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--bg);
+  cursor: pointer;
+  transition: var(--transition);
+  outline: none;
+  appearance: auto;
+}
+
+.range-category-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(214, 147, 88, 0.15);
+}
+
 .range-inputs {
   display: flex;
   align-items: center;

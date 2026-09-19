@@ -1,4 +1,14 @@
 {
-  "lastId": 1,
-  "words": []
+  "lastId": 3,
+  "words": [
+    {
+      "id": 3,
+      "word": "book",
+      "translation": "kitob",
+      "category": "Umumiy",
+      "createdAt": 1789811996545,
+      "updatedAt": 1789812263134,
+      "source": "client"
+    }
+  ]
 }
