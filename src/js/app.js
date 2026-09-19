@@ -53,9 +53,20 @@ router.resolve();
 
 // Background Auto Sync
 setupAutoSync((res) => {
-  // If user is on home screen, re-resolve to update counts
   if (window.location.hash === '#/' || !window.location.hash) {
     router.resolve();
   }
 });
+
+// Service Worker Auto Update & Cache Refresh
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.ready.then(registration => {
+    registration.update().catch(() => {});
+  });
+
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    window.location.reload();
+  });
+}
+
 
