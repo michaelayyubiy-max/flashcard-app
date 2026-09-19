@@ -33,6 +33,29 @@ export async function deleteWord(id) {
   await db.words.delete(id);
 }
 
+export async function deleteWordByText(wordText) {
+  const normalized = (wordText || '').trim().toLowerCase();
+  const all = await getAllWords();
+  const match = all.find(w => w.word.toLowerCase() === normalized);
+  if (match) {
+    await db.words.delete(match.id);
+  }
+}
+
+export async function deleteWordsByText(wordTexts = []) {
+  if (!Array.isArray(wordTexts) || wordTexts.length === 0) return;
+  const set = new Set(wordTexts.map(t => String(t).trim().toLowerCase()));
+  const all = await getAllWords();
+  const toDelete = all.filter(w => set.has(w.word.toLowerCase()));
+  if (toDelete.length > 0) {
+    await db.transaction('rw', db.words, async () => {
+      for (const item of toDelete) {
+        await db.words.delete(item.id);
+      }
+    });
+  }
+}
+
 export async function getWord(id) {
   return await db.words.get(id);
 }
@@ -60,9 +83,10 @@ export async function searchWords(query) {
   );
 }
 
-export async function bulkUpsertWords(serverWords) {
-  if (!Array.isArray(serverWords) || serverWords.length === 0) return { added: 0, updated: 0 };
+export async function bulkUpsertWords(serverWords, recentlyDeleted = []) {
+  if (!Array.isArray(serverWords)) return { added: 0, updated: 0, total: await getWordCount() };
 
+  const deletedSet = new Set((recentlyDeleted || []).map(w => String(w).trim().toLowerCase()));
   const existingWords = await getAllWords();
   const existingMap = new Map(existingWords.map(w => [w.word.toLowerCase(), w]));
 
@@ -70,9 +94,20 @@ export async function bulkUpsertWords(serverWords) {
   let updated = 0;
 
   await db.transaction('rw', db.words, async () => {
+    // Delete any words that are in deletedSet
+    for (const [key, item] of existingMap.entries()) {
+      if (deletedSet.has(key)) {
+        await db.words.delete(item.id);
+        existingMap.delete(key);
+      }
+    }
+
     for (const sw of serverWords) {
       if (!sw.word || !sw.translation) continue;
-      const existing = existingMap.get(sw.word.toLowerCase());
+      const lower = sw.word.toLowerCase();
+      if (deletedSet.has(lower)) continue;
+
+      const existing = existingMap.get(lower);
 
       if (existing) {
         if (sw.translation !== existing.translation || (sw.updatedAt || 0) > (existing.updatedAt || 0)) {

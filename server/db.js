@@ -117,6 +117,9 @@ async function syncToPostgres(wordObj, isDelete = false) {
   }
 }
 
+// Cache of recently deleted words (lowercased) so syncing clients know they were deleted
+let recentlyDeleted = new Set();
+
 export function getAllWords() {
   return inMemoryData.words;
 }
@@ -125,10 +128,17 @@ export function getWordCount() {
   return inMemoryData.words.length;
 }
 
+export function getRecentlyDeleted() {
+  return Array.from(recentlyDeleted);
+}
+
 export function addWord(wordText, translationText, source = 'bot') {
   const trimmedWord = (wordText || '').trim();
   const trimmedTrans = (translationText || '').trim();
   if (!trimmedWord || !trimmedTrans) return null;
+
+  // If this word was recently deleted, unmark it
+  recentlyDeleted.delete(trimmedWord.toLowerCase());
 
   const now = Date.now();
   const existingIdx = inMemoryData.words.findIndex(
@@ -170,6 +180,8 @@ export function addBatchWords(items, source = 'bot') {
     const trimmedTrans = (item.translation || '').trim();
     if (!trimmedWord || !trimmedTrans) continue;
 
+    recentlyDeleted.delete(trimmedWord.toLowerCase());
+
     const existingIdx = inMemoryData.words.findIndex(
       w => w.word.toLowerCase() === trimmedWord.toLowerCase()
     );
@@ -202,13 +214,21 @@ export function addBatchWords(items, source = 'bot') {
 
 export function deleteWord(idOrWord) {
   const initialLen = inMemoryData.words.length;
+  let removedWord = null;
 
-  if (typeof idOrWord === 'number' || !isNaN(Number(idOrWord))) {
+  if (typeof idOrWord === 'number' || (!isNaN(Number(idOrWord)) && String(idOrWord).trim() !== '')) {
     const targetId = Number(idOrWord);
+    const target = inMemoryData.words.find(w => w.id === targetId);
+    if (target) {
+      removedWord = target.word.toLowerCase();
+      recentlyDeleted.add(removedWord);
+    }
     inMemoryData.words = inMemoryData.words.filter(w => w.id !== targetId);
     syncToPostgres(targetId, true);
   } else {
     const targetWord = String(idOrWord).trim().toLowerCase();
+    removedWord = targetWord;
+    recentlyDeleted.add(targetWord);
     inMemoryData.words = inMemoryData.words.filter(w => w.word.toLowerCase() !== targetWord);
     syncToPostgres(targetWord, true);
   }
@@ -218,15 +238,42 @@ export function deleteWord(idOrWord) {
   return deleted;
 }
 
-export function syncClientWords(clientWords = []) {
+export function syncClientWords(clientWords = [], deletedWords = []) {
   const now = Date.now();
   let addedCount = 0;
   let updatedCount = 0;
+  let deletedCount = 0;
 
+  // Process client deletions first
+  if (Array.isArray(deletedWords) && deletedWords.length > 0) {
+    for (const delItem of deletedWords) {
+      if (!delItem) continue;
+      const target = String(delItem).trim().toLowerCase();
+      recentlyDeleted.add(target);
+      const before = inMemoryData.words.length;
+      inMemoryData.words = inMemoryData.words.filter(w => {
+        if (typeof delItem === 'number' && w.id === delItem) return false;
+        return w.word.toLowerCase() !== target;
+      });
+      if (inMemoryData.words.length < before) {
+        deletedCount++;
+        syncToPostgres(delItem, true);
+      }
+    }
+  }
+
+  // Process client additions and updates (skip if recently deleted on server)
   for (const cw of clientWords) {
     if (!cw.word || !cw.translation) continue;
+    const lower = cw.word.trim().toLowerCase();
+
+    // If this word was deleted on server, do not re-add it
+    if (recentlyDeleted.has(lower)) {
+      continue;
+    }
+
     const existingIdx = inMemoryData.words.findIndex(
-      w => w.word.toLowerCase() === cw.word.trim().toLowerCase()
+      w => w.word.toLowerCase() === lower
     );
 
     if (existingIdx !== -1) {
@@ -253,13 +300,14 @@ export function syncClientWords(clientWords = []) {
     }
   }
 
-  if (addedCount > 0 || updatedCount > 0) {
+  if (addedCount > 0 || updatedCount > 0 || deletedCount > 0) {
     persistData();
   }
 
   return {
     serverWords: inMemoryData.words,
+    recentlyDeleted: Array.from(recentlyDeleted),
     serverTimestamp: now,
-    stats: { added: addedCount, updated: updatedCount }
+    stats: { added: addedCount, updated: updatedCount, deleted: deletedCount }
   };
 }

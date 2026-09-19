@@ -7,25 +7,39 @@ const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
 let isPolling = false;
 let lastUpdateId = 0;
 
-export async function sendMessage(chatId, text, options = {}) {
+export async function telegramApi(method, body = {}) {
   try {
-    const res = await fetch(`${TELEGRAM_API}/sendMessage`, {
+    const res = await fetch(`${TELEGRAM_API}/${method}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text,
-        parse_mode: options.parse_mode || 'HTML',
-        ...options
-      })
+      body: JSON.stringify(body)
     });
     return await res.json();
   } catch (err) {
-    console.error('Failed to send Telegram message:', err.message);
+    console.error(`Telegram API error (${method}):`, err.message);
+    return null;
   }
 }
 
-async function handleUpdate(update) {
+export async function sendMessage(chatId, text, options = {}) {
+  return await telegramApi('sendMessage', {
+    chat_id: chatId,
+    text,
+    parse_mode: options.parse_mode || 'HTML',
+    ...options
+  });
+}
+
+// Main Telegram Update Handler (Used by both Webhook and Polling)
+export async function handleTelegramUpdate(update) {
+  if (!update) return;
+
+  // Handle callback queries (Inline button clicks)
+  if (update.callback_query) {
+    await handleCallbackQuery(update.callback_query);
+    return;
+  }
+
   const message = update.message;
   if (!message || !message.text) return;
 
@@ -36,38 +50,44 @@ async function handleUpdate(update) {
   if (text === '/start' || text === '/help') {
     const total = getWordCount();
     const welcome = `👋 <b>Assalomu alaykum!</b>\n\n` +
-      `Bu bot orqali siz <b>FlashCards</b> ilovangizga so'zlarni istalgan formatda tez va oson qo'shishingiz mumkin.\n\n` +
-      `📝 <b>So'z qo'shish formatlari:</b>\n` +
-      `• <code>apple olma</code> (bo'sh joy bilan)\n` +
+      `Bu bot sizning <b>FlashCards</b> saytingiz va ilovangiz bilan bitta serverda 24/7 ishlaydi.\n\n` +
+      `📝 <b>So'z qo'shish qulay va oson:</b>\n` +
+      `• <code>apple olma</code>\n` +
       `• <code>apple - olma</code>\n` +
       `• <code>apple : olma</code>\n` +
-      `• <code>apple = olma</code>\n` +
       `• Ikki qatorda:\n<code>apple\nolma</code>\n\n` +
-      `• Bir vaqtda bir nechta so'z (ro'yxat):\n` +
-      `<code>apple - olma\nbanana - banan\ncar - mashina</code>\n\n` +
-      `⚡️ <i>Qo'shilgan so'zlar avtomatik tarzda kompyuteringiz va telefoningizdagi ilovada paydo bo'ladi!</i>\n\n` +
-      `📊 Hozirgi jami so'zlar: <b>${total} ta</b>\n\n` +
-      `📌 <b>Buyruqlar:</b>\n` +
-      `/words — Oxirgi so'zlar ro'yxati\n` +
-      `/count — Jami so'zlar soni\n` +
-      `/delete &lt;so'z&gt; — So'zni o'chirish`;
+      `• Yoki bir nechta so'zni birdan yuboring:\n` +
+      `<code>apple - olma\nbook - kitob\ncar - mashina</code>\n\n` +
+      `🗑 <b>So'zni o'chirish:</b>\n` +
+      `• <code>/delete apple</code> (aniq so'zni o'chirish)\n` +
+      `• Yoki shunchaki <b>/delete</b> deb yozing — bot sizga tanlash uchun tugmachalarni chiqaradi!\n\n` +
+      `📊 Jami bazadagi so'zlar: <b>${total} ta</b>`;
 
-    await sendMessage(chatId, welcome);
+    const keyboard = {
+      keyboard: [
+        [{ text: "📚 So'zlar ro'yxati" }, { text: "📊 Statistika" }],
+        [{ text: "🗑 So'zni o'chirish" }]
+      ],
+      resize_keyboard: true
+    };
+
+    await sendMessage(chatId, welcome, { reply_markup: keyboard });
     return;
   }
 
-  // /count
-  if (text === '/count') {
+  // /count or "📊 Statistika"
+  if (text === '/count' || text === "📊 Statistika") {
     const total = getWordCount();
-    await sendMessage(chatId, `📊 Jami so'zlar soni: <b>${total} ta</b>`);
+    await sendMessage(chatId, `📊 Hozirda bazada jami: <b>${total} ta</b> so'z mavjud.\n\n` +
+      `🌐 Sayt: <a href="https://flashcard-app-tluu.onrender.com">flashcard-app-tluu.onrender.com</a>`);
     return;
   }
 
-  // /words or /list
-  if (text === '/words' || text === '/list') {
+  // /words, /list or "📚 So'zlar ro'yxati"
+  if (text === '/words' || text === '/list' || text === "📚 So'zlar ro'yxati") {
     const words = getAllWords();
     if (words.length === 0) {
-      await sendMessage(chatId, `📭 Hozircha birorta ham so'z qo'shilmagan.\nSo'z qo'shish uchun shunchaki <code>word - translation</code> yuboring!`);
+      await sendMessage(chatId, `📭 Hozircha birorta ham so'z mavjud emas.\nSo'z qo'shish uchun shunchaki <code>apple - olma</code> deb yozib yuboring!`);
       return;
     }
 
@@ -78,38 +98,58 @@ async function handleUpdate(update) {
     });
 
     if (words.length > 20) {
-      listText += `\n<i>... va yana ${words.length - 20} ta so'z ilovangizda bor</i>`;
+      listText += `\n<i>... va yana ${words.length - 20} ta so'z saytingizda bor</i>\n`;
     }
 
+    listText += `\n💡 <i>Biror so'zni o'chirish uchun <code>/delete so'z</code> deb yozing yoki pastdagi "🗑 So'zni o'chirish" tugmasini bosing.</i>`;
     await sendMessage(chatId, listText);
     return;
   }
 
-  // /delete <word>
-  if (text.startsWith('/delete')) {
-    const target = text.replace('/delete', '').trim();
-    if (!target) {
-      await sendMessage(chatId, `ℹ️ So'zni o'chirish uchun: <code>/delete apple</code> formatida yozing.`);
+  // /delete or "🗑 So'zni o'chirish"
+  if (text.startsWith('/delete') || text === "🗑 So'zni o'chirish") {
+    let target = text.replace('/delete', '').replace("🗑 So'zni o'chirish", '').trim();
+
+    // If word is provided: /delete apple
+    if (target) {
+      const deleted = deleteWord(target);
+      const total = getWordCount();
+      if (deleted) {
+        await sendMessage(chatId, `🗑 <b>"${escapeHtml(target)}"</b> so'zi serverdan muvaffaqiyatli o'chirildi!\n📊 Qolgan so'zlar: <b>${total} ta</b>`);
+      } else {
+        await sendMessage(chatId, `❌ <b>"${escapeHtml(target)}"</b> so'zi bazada topilmadi.`);
+      }
       return;
     }
 
-    const deleted = deleteWord(target);
-    if (deleted) {
-      const total = getWordCount();
-      await sendMessage(chatId, `🗑 <b>"${escapeHtml(target)}"</b> so'zi o'chirildi.\n📊 Qolgan so'zlar: <b>${total} ta</b>`);
-    } else {
-      await sendMessage(chatId, `❌ <b>"${escapeHtml(target)}"</b> bazada topilmadi.`);
+    // If no word provided, show interactive inline buttons with last 10 words
+    const words = getAllWords();
+    if (words.length === 0) {
+      await sendMessage(chatId, `📭 Bazada o'chirish uchun so'z yo'q.`);
+      return;
     }
+
+    const recent = words.slice(-10).reverse();
+    const inlineKeyboard = recent.map(w => [
+      {
+        text: `🗑 ${w.word} — ${w.translation}`,
+        callback_data: `del:${w.id}:${w.word.substring(0, 30)}`
+      }
+    ]);
+
+    await sendMessage(chatId, `🗑 <b>O'chirmoqchi bo'lgan so'zni tanlang:</b>\n<i>(Bitta tugmani bosishingiz bilan serverdan o'chiriladi)</i>`, {
+      reply_markup: { inline_keyboard: inlineKeyboard }
+    });
     return;
   }
 
-  // Parse words from text message
+  // Parse words from plain text
   const parsed = parseWordsFromText(text);
 
   if (parsed.length === 0) {
     await sendMessage(
       chatId,
-      `❓ So'z aniqlanmadi.\n\nIltimos, quyidagi formatlardan birida yuboring:\n` +
+      `❓ So'z aniqlanmadi.\n\nIltimos, quyidagi formatlardan birida yozing:\n` +
       `• <code>apple olma</code>\n` +
       `• <code>apple - olma</code>\n` +
       `• <code>apple\nolma</code>`
@@ -126,7 +166,8 @@ async function handleUpdate(update) {
     const actionText = isUpdated ? 'yangilandi' : 'qo\'shildi';
     const reply = `✅ So'z <b>${actionText}</b>!\n\n` +
       `📖 <b>${escapeHtml(item.word)}</b> ➔ ${escapeHtml(item.translation)}\n\n` +
-      `📊 Jami so'zlar: <b>${total} ta</b>`;
+      `📊 Jami so'zlar: <b>${total} ta</b>\n` +
+      `🌐 Saytda ham darhol ko'rishingiz mumkin!`;
     await sendMessage(chatId, reply);
   } else {
     let reply = `✅ <b>${parsed.length} ta</b> so'z muvaffaqiyatli saqlandi!\n\n`;
@@ -138,30 +179,76 @@ async function handleUpdate(update) {
   }
 }
 
-export async function startBot() {
+// Handle Inline button clicks (Delete word)
+async function handleCallbackQuery(query) {
+  const data = query.data || '';
+  const chatId = query.message?.chat?.id;
+  const messageId = query.message?.message_id;
+
+  if (data.startsWith('del:')) {
+    const parts = data.split(':');
+    const wordId = parts[1];
+    const wordText = parts[2] || wordId;
+
+    const deleted = deleteWord(wordId) || deleteWord(wordText);
+    const total = getWordCount();
+
+    // Answer callback query (dismiss spinner)
+    await telegramApi('answerCallbackQuery', {
+      callback_query_id: query.id,
+      text: deleted ? `"${wordText}" o'chirildi` : 'Topilmadi'
+    });
+
+    // Edit original message to reflect deletion
+    if (chatId && messageId) {
+      if (deleted) {
+        await telegramApi('editMessageText', {
+          chat_id: chatId,
+          message_id: messageId,
+          text: `🗑 <b>"${escapeHtml(wordText)}"</b> so'zi muvaffaqiyatli o'chirildi!\n📊 Qolgan so'zlar: <b>${total} ta</b>`,
+          parse_mode: 'HTML'
+        });
+      } else {
+        await telegramApi('editMessageText', {
+          chat_id: chatId,
+          message_id: messageId,
+          text: `❌ <b>"${escapeHtml(wordText)}"</b> allaqachon o'chirilgan yoki topilmadi.\n📊 Jami so'zlar: <b>${total} ta</b>`,
+          parse_mode: 'HTML'
+        });
+      }
+    }
+  }
+}
+
+// Set Webhook for production 24/7 reliability on Render
+export async function setBotWebhook(serverUrl) {
+  const webhookUrl = `${serverUrl.replace(/\/$/, '')}/api/telegram-webhook`;
+  console.log(`🔗 Telegram Webhook o'rnatilmoqda: ${webhookUrl}`);
+
+  const res = await telegramApi('setWebhook', {
+    url: webhookUrl,
+    allowed_updates: ['message', 'callback_query'],
+    drop_pending_updates: false
+  });
+
+  if (res && res.ok) {
+    console.log('✅ Telegram Webhook muvaffaqiyatli o\'rnatildi!');
+    return true;
+  } else {
+    console.warn('⚠️ Webhook o\'rnatishda xatolik:', res?.description || res);
+    return false;
+  }
+}
+
+// Start polling fallback (for local development when webhook cannot reach localhost)
+export async function startBotPolling() {
   if (isPolling) return;
   isPolling = true;
-  console.log('🤖 Telegram Bot (@flashcardsuzbot) ishga tushdi...');
+  console.log('🤖 Telegram Bot (@flashcardsuzbot) polling rejimida ishga tushdi...');
 
-  // Set bot commands
-  try {
-    await fetch(`${TELEGRAM_API}/setMyCommands`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        commands: [
-          { command: 'start', description: 'Botni ishga tushirish va qo\'llanma' },
-          { command: 'words', description: 'Oxirgi qo\'shilgan so\'zlar ro\'yxati' },
-          { command: 'count', description: 'Jami so\'zlar soni' },
-          { command: 'help', description: 'Qo\'llanma va formatlar' }
-        ]
-      })
-    });
-  } catch (e) {
-    console.warn('Failed to set bot commands:', e.message);
-  }
+  // Delete webhook so polling can receive updates
+  await telegramApi('deleteWebhook', { drop_pending_updates: false });
 
-  // Polling loop with error recovery
   while (isPolling) {
     try {
       const res = await fetch(`${TELEGRAM_API}/getUpdates?offset=${lastUpdateId + 1}&timeout=15`);
@@ -170,17 +257,15 @@ export async function startBot() {
       if (data.ok && Array.isArray(data.result)) {
         for (const update of data.result) {
           lastUpdateId = Math.max(lastUpdateId, update.update_id);
-          await handleUpdate(update);
+          await handleTelegramUpdate(update);
         }
       } else if (data.error_code === 409) {
-        // Conflict - another instance is polling, wait a bit
-        console.warn('409 Conflict: boshqa bot instansiyasi ishlayapti, kutilmoqda...');
+        console.warn('409 Conflict: boshqa instansiya ishlayapti, kutilmoqda...');
         await new Promise(r => setTimeout(r, 5000));
       } else {
         await new Promise(r => setTimeout(r, 2000));
       }
     } catch (err) {
-      // Network hiccup or pause
       await new Promise(r => setTimeout(r, 3000));
     }
   }

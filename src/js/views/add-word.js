@@ -1,5 +1,5 @@
 import { addWord, updateWord, deleteWord, getAllWords, searchWords } from '../db.js';
-import { syncWithServer } from '../sync.js';
+import { syncWithServer, deleteWordFromServer } from '../sync.js';
 import { showToast } from '../app.js';
 
 export function renderAddWord(app, router) {
@@ -182,7 +182,14 @@ export function renderAddWord(app, router) {
       });
 
       document.getElementById('modal-confirm').addEventListener('click', async () => {
+        const wordText = word.word;
+
+        // 1. Delete locally from IndexedDB
         await deleteWord(id);
+
+        // 2. Immediately delete on server (and queue for offline sync if unreachable)
+        deleteWordFromServer(wordText, id);
+
         overlay.classList.remove('active');
         setTimeout(() => overlay.remove(), 300);
         showToast('🗑 So\'z o\'chirildi');
