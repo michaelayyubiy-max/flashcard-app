@@ -57,8 +57,11 @@ export function renderAddWord(app, router) {
               <input type="text" class="form-input" id="input-word" placeholder="apple" autocomplete="off">
             </div>
             <div class="form-group">
-              <label class="form-label">Tarjimasi (o'zbekcha)</label>
-              <input type="text" class="form-input" id="input-translation" placeholder="olma" autocomplete="off">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <label class="form-label" style="margin-bottom:0;">Tarjimasi va izohi (o'zbekcha)</label>
+                <span style="font-size:11px;color:var(--text-secondary);opacity:0.8;">Shift+Return = yangi qator</span>
+              </div>
+              <textarea class="form-input" id="input-translation" rows="2" placeholder="Tarjimasi yoki izohi (Shift+Return yangi qator)..." autocomplete="off" style="resize:vertical;min-height:56px;font-family:inherit;line-height:1.45;"></textarea>
             </div>
 
             <!-- Category Selector & Add Category Button -->
@@ -135,12 +138,37 @@ export function renderAddWord(app, router) {
       // Save word
       document.getElementById('btn-save').addEventListener('click', handleSave);
 
-      // Enter keys
-      document.getElementById('input-translation').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') handleSave();
+      // Textarea auto-resize helper
+      const transInput = document.getElementById('input-translation');
+      const wordInput = document.getElementById('input-word');
+
+      function resizeTransInput() {
+        if (!transInput) return;
+        transInput.style.height = 'auto';
+        transInput.style.height = Math.max(56, transInput.scrollHeight) + 'px';
+      }
+
+      transInput.addEventListener('input', resizeTransInput);
+
+      // Enter & Shift+Return keys handling
+      transInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          if (e.shiftKey) {
+            // Shift + Return: insert newline and auto-expand
+            setTimeout(resizeTransInput, 0);
+          } else {
+            // Return alone: Save word!
+            e.preventDefault();
+            handleSave();
+          }
+        }
       });
-      document.getElementById('input-word').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') document.getElementById('input-translation').focus();
+
+      wordInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          transInput.focus();
+        }
       });
 
       // Category select change
@@ -426,6 +454,7 @@ export function renderAddWord(app, router) {
 
         wordInput.value = '';
         transInput.value = '';
+        transInput.style.height = '56px';
         wordInput.focus();
 
         await refreshData();
@@ -454,7 +483,10 @@ export function renderAddWord(app, router) {
           if (word) {
             editingId = id;
             document.getElementById('input-word').value = word.word;
-            document.getElementById('input-translation').value = word.translation;
+            const tInput = document.getElementById('input-translation');
+            tInput.value = word.translation;
+            tInput.style.height = 'auto';
+            tInput.style.height = Math.max(56, tInput.scrollHeight) + 'px';
             if (document.getElementById('select-category')) {
               document.getElementById('select-category').value = word.category || 'Umumiy';
             }

@@ -1,5 +1,6 @@
 import { getAllWords } from '../db.js';
 import { showToast } from '../app.js';
+import { fitAllCardTexts } from '../card-helper.js';
 
 export function renderLearn(app, router) {
   return async () => {
@@ -70,11 +71,17 @@ export function renderLearn(app, router) {
         </div>
       `;
 
+      // Auto-fit card text font size on render
+      requestAnimationFrame(() => {
+        fitAllCardTexts(document.getElementById('card'));
+      });
+
       // Card flip
       document.getElementById('card').addEventListener('click', () => {
         isFlipped = !isFlipped;
         const card = document.getElementById('card');
         card.classList.toggle('flipped', isFlipped);
+        fitAllCardTexts(card);
       });
 
       // Navigation
@@ -136,7 +143,9 @@ export function renderLearn(app, router) {
         } else if (e.key === ' ' || e.key === 'Enter') {
           e.preventDefault();
           isFlipped = !isFlipped;
-          document.getElementById('card').classList.toggle('flipped', isFlipped);
+          const card = document.getElementById('card');
+          card.classList.toggle('flipped', isFlipped);
+          fitAllCardTexts(card);
         }
       };
 
