@@ -3,7 +3,7 @@ import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-import { getAllWords, addWord, addBatchWords, deleteWord, deleteAllWords, getWordCount, syncClientWords, getRecentlyDeleted } from './db.js';
+import { getAllWords, addWord, addBatchWords, deleteWord, deleteAllWords, getWordCount, syncClientWords, getRecentlyDeleted, getAllCategories, addCategory, deleteCategory } from './db.js';
 import { handleTelegramUpdate, setBotWebhook, startBotPolling } from './bot.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -23,6 +23,7 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
     wordsCount: getWordCount(),
+    categoriesCount: getAllCategories().length,
     recentlyDeletedCount: getRecentlyDeleted().length,
     bot: '@flashcardsuzbot',
     publicUrl: SERVER_PUBLIC_URL,
@@ -41,6 +42,42 @@ app.post('/api/telegram-webhook', async (req, res) => {
   }
 });
 
+// GET all categories
+app.get('/api/categories', (req, res) => {
+  try {
+    const categories = getAllCategories();
+    res.json({ success: true, categories });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// POST new category
+app.post('/api/categories', (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name || !name.trim()) {
+      return res.status(400).json({ success: false, error: 'Category name is required' });
+    }
+    const added = addCategory(name);
+    res.json({ success: true, added, categories: getAllCategories() });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// DELETE category (2 modes: deleteWords=true/false)
+app.delete('/api/categories/:name', (req, res) => {
+  try {
+    const { name } = req.params;
+    const deleteWords = req.query.deleteWords === 'true' || req.body?.deleteWords === true;
+    const result = deleteCategory(name, deleteWords);
+    res.json({ success: true, ...result, categories: getAllCategories(), remainingWords: getWordCount() });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // GET all words
 app.get('/api/words', (req, res) => {
   try {
@@ -54,7 +91,7 @@ app.get('/api/words', (req, res) => {
 // POST new word(s)
 app.post('/api/words', (req, res) => {
   try {
-    const { word, translation, words, source = 'api' } = req.body;
+    const { word, translation, category = 'Umumiy', words, source = 'api' } = req.body;
 
     if (Array.isArray(words)) {
       const result = addBatchWords(words, source);
@@ -65,7 +102,7 @@ app.post('/api/words', (req, res) => {
       return res.status(400).json({ success: false, error: 'word and translation are required' });
     }
 
-    const saved = addWord(word, translation, source);
+    const saved = addWord(word, translation, category, source);
     res.json({ success: true, word: saved });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -111,11 +148,11 @@ app.delete('/api/words', (req, res) => {
   }
 });
 
-// POST sync (bidirectional with deletion sync)
+// POST sync (bidirectional with deletion sync and categories)
 app.post('/api/sync', (req, res) => {
   try {
-    const { clientWords = [], deletedWords = [] } = req.body;
-    const result = syncClientWords(clientWords, deletedWords);
+    const { clientWords = [], deletedWords = [], clientCategories = [] } = req.body;
+    const result = syncClientWords(clientWords, deletedWords, clientCategories);
     res.json({ success: true, ...result });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

@@ -1,4 +1,4 @@
-import { getAllWords, bulkUpsertWords, deleteWordsByText } from './db.js';
+import { getAllWords, bulkUpsertWords, deleteWordsByText, getAllCategories, addCategory } from './db.js';
 
 export const PRODUCTION_API_URL = 'https://flashcard-app-tluu.onrender.com/api';
 
@@ -115,6 +115,22 @@ export async function deleteWordFromServer(wordText, wordId = null) {
   return false;
 }
 
+// Delete category on the server
+export async function deleteCategoryFromServer(name, deleteWordsAlso = false) {
+  try {
+    const apiUrl = getApiUrl();
+    const encoded = encodeURIComponent(name);
+    await fetch(`${apiUrl}/categories/${encoded}?deleteWords=${deleteWordsAlso}`, {
+      method: 'DELETE',
+      signal: AbortSignal.timeout(6000)
+    });
+    return true;
+  } catch (err) {
+    console.warn('Could not delete category on server:', err.message);
+    return false;
+  }
+}
+
 // Delete ALL words everywhere (Server + Local)
 export async function deleteAllWordsEverywhere() {
   try {
@@ -153,13 +169,15 @@ export async function syncWithServer() {
     }
 
     const pendingDeletions = Array.from(new Set([...getDeletedQueue(), ...permDeleted]));
+    const localCategories = await getAllCategories();
 
     const response = await fetch(`${apiUrl}/sync`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         clientWords: validLocalWords,
-        deletedWords: pendingDeletions
+        deletedWords: pendingDeletions,
+        clientCategories: localCategories
       }),
       signal: AbortSignal.timeout(10000)
     });
@@ -171,6 +189,13 @@ export async function syncWithServer() {
     const data = await response.json();
     if (data.success && Array.isArray(data.serverWords)) {
       saveDeletedQueue([]);
+
+      // Ingest categories from server
+      if (Array.isArray(data.categories) && data.categories.length > 0) {
+        for (const cat of data.categories) {
+          if (cat) await addCategory(cat);
+        }
+      }
 
       // Merge server recently deleted with local permanent deletions
       if (Array.isArray(data.recentlyDeleted) && data.recentlyDeleted.length > 0) {

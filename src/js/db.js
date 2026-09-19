@@ -6,27 +6,110 @@ db.version(1).stores({
   words: '++id, word, translation, createdAt, updatedAt'
 });
 
+db.version(2).stores({
+  words: '++id, word, translation, category, createdAt, updatedAt',
+  categories: '++id, name, createdAt'
+}).upgrade(tx => {
+  return tx.words.toCollection().modify(word => {
+    if (!word.category) word.category = 'Umumiy';
+  });
+});
+
 // ═══════════════════════════════════════
-// CRUD Operations
+// Category Operations
 // ═══════════════════════════════════════
 
-export async function addWord(word, translation) {
-  const now = Date.now();
-  const id = await db.words.add({
-    word: word.trim(),
-    translation: translation.trim(),
-    createdAt: now,
-    updatedAt: now
+export async function getAllCategories() {
+  try {
+    const cats = await db.categories.orderBy('name').toArray();
+    const names = cats.map(c => c.name.trim()).filter(Boolean);
+    const set = new Set(['Umumiy', ...names]);
+    return Array.from(set);
+  } catch (e) {
+    return ['Umumiy'];
+  }
+}
+
+export async function addCategory(name) {
+  const trimmed = (name || '').trim();
+  if (!trimmed) return null;
+  const existing = await db.categories.where('name').equalsIgnoreCase(trimmed).first();
+  if (existing) return existing.id;
+  const id = await db.categories.add({
+    name: trimmed,
+    createdAt: Date.now()
   });
   return id;
 }
 
-export async function updateWord(id, word, translation) {
+export async function deleteCategory(name, deleteWordsAlso = false) {
+  const target = (name || '').trim();
+  if (!target || target.toLowerCase() === 'umumiy') return { success: false, reason: 'cannot_delete_default' };
+
+  let affectedWordsCount = 0;
+  const deletedWordsList = [];
+
+  await db.transaction('rw', [db.categories, db.words], async () => {
+    // 1. Delete from categories store
+    const cats = await db.categories.toArray();
+    const matchedCats = cats.filter(c => c.name.trim().toLowerCase() === target.toLowerCase());
+    for (const c of matchedCats) {
+      await db.categories.delete(c.id);
+    }
+
+    // 2. Handle words in this category
+    const allWords = await db.words.toArray();
+    const wordsInCat = allWords.filter(w => (w.category || 'Umumiy').trim().toLowerCase() === target.toLowerCase());
+    affectedWordsCount = wordsInCat.length;
+
+    if (deleteWordsAlso) {
+      // 1-Variant: Delete words also
+      for (const w of wordsInCat) {
+        deletedWordsList.push(w.word);
+        await db.words.delete(w.id);
+      }
+    } else {
+      // 2-Variant: Preserve words, reassign to 'Umumiy'
+      for (const w of wordsInCat) {
+        await db.words.update(w.id, { category: 'Umumiy', updatedAt: Date.now() });
+      }
+    }
+  });
+
+  return { success: true, affectedWordsCount, deletedWordsList };
+}
+
+// ═══════════════════════════════════════
+// CRUD Operations
+// ═══════════════════════════════════════
+
+export async function addWord(word, translation, category = 'Umumiy') {
+  const now = Date.now();
+  const cat = (category || 'Umumiy').trim();
+  const id = await db.words.add({
+    word: word.trim(),
+    translation: translation.trim(),
+    category: cat,
+    createdAt: now,
+    updatedAt: now
+  });
+  if (cat && cat.toLowerCase() !== 'umumiy') {
+    await addCategory(cat);
+  }
+  return id;
+}
+
+export async function updateWord(id, word, translation, category = 'Umumiy') {
+  const cat = (category || 'Umumiy').trim();
   await db.words.update(id, {
     word: word.trim(),
     translation: translation.trim(),
+    category: cat,
     updatedAt: Date.now()
   });
+  if (cat && cat.toLowerCase() !== 'umumiy') {
+    await addCategory(cat);
+  }
 }
 
 export async function deleteWord(id) {
@@ -131,9 +214,10 @@ export async function bulkUpsertWords(serverWords, recentlyDeleted = []) {
       const existing = existingMap.get(lower);
 
       if (existing) {
-        if (sw.translation !== existing.translation || (sw.updatedAt || 0) > (existing.updatedAt || 0)) {
+        if (sw.translation !== existing.translation || sw.category !== existing.category || (sw.updatedAt || 0) > (existing.updatedAt || 0)) {
           await db.words.update(existing.id, {
             translation: sw.translation.trim(),
+            category: sw.category || 'Umumiy',
             updatedAt: sw.updatedAt || Date.now()
           });
           updated++;
@@ -142,6 +226,7 @@ export async function bulkUpsertWords(serverWords, recentlyDeleted = []) {
         await db.words.add({
           word: sw.word.trim(),
           translation: sw.translation.trim(),
+          category: sw.category || 'Umumiy',
           createdAt: sw.createdAt || Date.now(),
           updatedAt: sw.updatedAt || Date.now()
         });

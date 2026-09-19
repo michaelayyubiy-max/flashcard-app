@@ -147,6 +147,77 @@ function persistDeletedWords() {
   } catch (err) {
     console.error('Error saving deleted_words.json:', err);
   }
+const CATEGORIES_FILE = path.join(DATA_DIR, 'categories.json');
+
+function loadCategoriesData() {
+  try {
+    if (fs.existsSync(CATEGORIES_FILE)) {
+      const raw = fs.readFileSync(CATEGORIES_FILE, 'utf8');
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr)) {
+        return arr;
+      }
+    }
+  } catch (err) {
+    console.error('Error loading categories.json:', err);
+  }
+  return ['Umumiy'];
+}
+
+let categoriesData = loadCategoriesData();
+
+function persistCategoriesData() {
+  try {
+    fs.writeFileSync(CATEGORIES_FILE, JSON.stringify(categoriesData, null, 2), 'utf8');
+  } catch (err) {
+    console.error('Error saving categories.json:', err);
+  }
+}
+
+export function getAllCategories() {
+  const set = new Set(['Umumiy', ...categoriesData]);
+  return Array.from(set);
+}
+
+export function addCategory(name) {
+  const trimmed = (name || '').trim();
+  if (!trimmed) return false;
+  if (!categoriesData.map(c => c.toLowerCase()).includes(trimmed.toLowerCase())) {
+    categoriesData.push(trimmed);
+    persistCategoriesData();
+    return true;
+  }
+  return false;
+}
+
+export function deleteCategory(name, deleteWordsAlso = false) {
+  const target = (name || '').trim();
+  if (!target || target.toLowerCase() === 'umumiy') return { success: false, reason: 'cannot_delete_default' };
+
+  categoriesData = categoriesData.filter(c => c.toLowerCase() !== target.toLowerCase());
+  persistCategoriesData();
+
+  let affectedCount = 0;
+  if (deleteWordsAlso) {
+    // 1-Variant: Delete words also
+    const toDelete = inMemoryData.words.filter(w => (w.category || 'Umumiy').toLowerCase() === target.toLowerCase());
+    affectedCount = toDelete.length;
+    toDelete.forEach(w => recentlyDeleted.add(w.word.toLowerCase()));
+    inMemoryData.words = inMemoryData.words.filter(w => (w.category || 'Umumiy').toLowerCase() !== target.toLowerCase());
+  } else {
+    // 2-Variant: Preserve words, move to 'Umumiy'
+    inMemoryData.words.forEach(w => {
+      if ((w.category || 'Umumiy').toLowerCase() === target.toLowerCase()) {
+        w.category = 'Umumiy';
+        w.updatedAt = Date.now();
+        affectedCount++;
+      }
+    });
+  }
+
+  persistData();
+  persistDeletedWords();
+  return { success: true, affectedCount };
 }
 
 export function getAllWords() {
@@ -173,13 +244,17 @@ export function deleteAllWords() {
   return true;
 }
 
-export function addWord(wordText, translationText, source = 'bot') {
+export function addWord(wordText, translationText, category = 'Umumiy', source = 'bot') {
   const trimmedWord = (wordText || '').trim();
   const trimmedTrans = (translationText || '').trim();
+  const trimmedCat = (category || 'Umumiy').trim();
   if (!trimmedWord || !trimmedTrans) return null;
 
   // If this word was recently deleted, unmark it
   recentlyDeleted.delete(trimmedWord.toLowerCase());
+  if (trimmedCat && trimmedCat.toLowerCase() !== 'umumiy') {
+    addCategory(trimmedCat);
+  }
 
   const now = Date.now();
   const existingIdx = inMemoryData.words.findIndex(
@@ -188,6 +263,7 @@ export function addWord(wordText, translationText, source = 'bot') {
 
   if (existingIdx !== -1) {
     inMemoryData.words[existingIdx].translation = trimmedTrans;
+    inMemoryData.words[existingIdx].category = trimmedCat;
     inMemoryData.words[existingIdx].updatedAt = now;
     inMemoryData.words[existingIdx].source = source;
     persistData();
@@ -200,6 +276,7 @@ export function addWord(wordText, translationText, source = 'bot') {
     id: inMemoryData.lastId,
     word: trimmedWord,
     translation: trimmedTrans,
+    category: trimmedCat,
     createdAt: now,
     updatedAt: now,
     source
@@ -219,9 +296,13 @@ export function addBatchWords(items, source = 'bot') {
   for (const item of items) {
     const trimmedWord = (item.word || '').trim();
     const trimmedTrans = (item.translation || '').trim();
+    const trimmedCat = (item.category || 'Umumiy').trim();
     if (!trimmedWord || !trimmedTrans) continue;
 
     recentlyDeleted.delete(trimmedWord.toLowerCase());
+    if (trimmedCat && trimmedCat.toLowerCase() !== 'umumiy') {
+      addCategory(trimmedCat);
+    }
 
     const existingIdx = inMemoryData.words.findIndex(
       w => w.word.toLowerCase() === trimmedWord.toLowerCase()
@@ -229,6 +310,7 @@ export function addBatchWords(items, source = 'bot') {
 
     if (existingIdx !== -1) {
       inMemoryData.words[existingIdx].translation = trimmedTrans;
+      inMemoryData.words[existingIdx].category = trimmedCat;
       inMemoryData.words[existingIdx].updatedAt = now;
       inMemoryData.words[existingIdx].source = source;
       updated.push(inMemoryData.words[existingIdx]);
@@ -239,6 +321,7 @@ export function addBatchWords(items, source = 'bot') {
         id: inMemoryData.lastId,
         word: trimmedWord,
         translation: trimmedTrans,
+        category: trimmedCat,
         createdAt: now,
         updatedAt: now,
         source
@@ -248,6 +331,10 @@ export function addBatchWords(items, source = 'bot') {
       syncToPostgres(newWord);
     }
   }
+
+  persistData();
+  return { added, updated, total: inMemoryData.words.length };
+}
 
   persistData();
   return { added, updated, total: inMemoryData.words.length };
@@ -282,11 +369,18 @@ export function deleteWord(idOrWord) {
   return deleted;
 }
 
-export function syncClientWords(clientWords = [], deletedWords = []) {
+export function syncClientWords(clientWords = [], deletedWords = [], clientCategories = []) {
   const now = Date.now();
   let addedCount = 0;
   let updatedCount = 0;
   let deletedCount = 0;
+
+  // Process client categories
+  if (Array.isArray(clientCategories) && clientCategories.length > 0) {
+    for (const cat of clientCategories) {
+      if (cat && typeof cat === 'string') addCategory(cat);
+    }
+  }
 
   // Process client deletions first
   if (Array.isArray(deletedWords) && deletedWords.length > 0) {
@@ -310,10 +404,15 @@ export function syncClientWords(clientWords = [], deletedWords = []) {
   for (const cw of clientWords) {
     if (!cw.word || !cw.translation) continue;
     const lower = cw.word.trim().toLowerCase();
+    const cat = cw.category || 'Umumiy';
 
     // If this word was deleted on server, do not re-add it
     if (recentlyDeleted.has(lower)) {
       continue;
+    }
+
+    if (cat && cat.toLowerCase() !== 'umumiy') {
+      addCategory(cat);
     }
 
     const existingIdx = inMemoryData.words.findIndex(
@@ -322,8 +421,9 @@ export function syncClientWords(clientWords = [], deletedWords = []) {
 
     if (existingIdx !== -1) {
       const clientTime = cw.updatedAt || cw.createdAt || 0;
-      if (clientTime > (inMemoryData.words[existingIdx].updatedAt || 0)) {
+      if (clientTime > (inMemoryData.words[existingIdx].updatedAt || 0) || (cw.category && cw.category !== inMemoryData.words[existingIdx].category)) {
         inMemoryData.words[existingIdx].translation = cw.translation.trim();
+        inMemoryData.words[existingIdx].category = cat;
         inMemoryData.words[existingIdx].updatedAt = clientTime || now;
         updatedCount++;
         syncToPostgres(inMemoryData.words[existingIdx]);
@@ -334,6 +434,7 @@ export function syncClientWords(clientWords = [], deletedWords = []) {
         id: inMemoryData.lastId,
         word: cw.word.trim(),
         translation: cw.translation.trim(),
+        category: cat,
         createdAt: cw.createdAt || now,
         updatedAt: cw.updatedAt || now,
         source: 'client'
@@ -351,6 +452,7 @@ export function syncClientWords(clientWords = [], deletedWords = []) {
 
   return {
     serverWords: inMemoryData.words,
+    categories: getAllCategories(),
     recentlyDeleted: Array.from(recentlyDeleted),
     serverTimestamp: now,
     stats: { added: addedCount, updated: updatedCount, deleted: deletedCount }
