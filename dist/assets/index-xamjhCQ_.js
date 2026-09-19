@@ -263,11 +263,9 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
               <div class="card-wrapper" id="card">
                 <div class="card-inner">
                   <div class="card-front">
-                    <div class="card-label">📁 ${De(o.category||`Umumiy`)}</div>
                     <div class="card-text">${De(o.word)}</div>
                   </div>
                   <div class="card-back">
-                    <div class="card-label">📁 ${De(o.category||`Umumiy`)}</div>
                     <div class="card-text">${De(o.translation)}</div>
                   </div>
                 </div>
@@ -360,11 +358,9 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
                 <div class="card-wrapper" id="card">
                   <div class="card-inner">
                     <div class="card-front">
-                      <div class="card-label">📁 ${I(t.category||`Umumiy`)}</div>
                       <div class="card-text">${I(t.word)}</div>
                     </div>
                     <div class="card-back">
-                      <div class="card-label">📁 ${I(t.category||`Umumiy`)}</div>
                       <div class="card-text">${I(t.translation)}</div>
                     </div>
                   </div>

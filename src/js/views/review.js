@@ -229,11 +229,9 @@ export function renderReview(app, router) {
                 <div class="card-wrapper" id="card">
                   <div class="card-inner">
                     <div class="card-front">
-                      <div class="card-label">📁 ${escapeHtml(word.category || 'Umumiy')}</div>
                       <div class="card-text">${escapeHtml(word.word)}</div>
                     </div>
                     <div class="card-back">
-                      <div class="card-label">📁 ${escapeHtml(word.category || 'Umumiy')}</div>
                       <div class="card-text">${escapeHtml(word.translation)}</div>
                     </div>
                   </div>
