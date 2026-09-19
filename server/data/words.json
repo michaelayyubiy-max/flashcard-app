@@ -1,13 +1,94 @@
 {
-  "lastId": 3,
+  "lastId": 13,
   "words": [
     {
-      "id": 3,
-      "word": "book",
-      "translation": "kitob",
+      "id": 4,
+      "word": "iron over",
+      "translation": "dazmolqilmoq",
       "category": "Umumiy",
-      "createdAt": 1789811996545,
-      "updatedAt": 1789812263134,
+      "createdAt": 1789803760379,
+      "updatedAt": 1789803760379,
+      "source": "client"
+    },
+    {
+      "id": 5,
+      "word": "preserve",
+      "translation": "saqlabqolish",
+      "category": "Umumiy",
+      "createdAt": 1789803339710,
+      "updatedAt": 1789803339710,
+      "source": "client"
+    },
+    {
+      "id": 6,
+      "word": "definitive",
+      "translation": "aniq",
+      "category": "Umumiy",
+      "createdAt": 1789803051286,
+      "updatedAt": 1789803051286,
+      "source": "client"
+    },
+    {
+      "id": 7,
+      "word": "emerging",
+      "translation": "starting to exist:",
+      "category": "Umumiy",
+      "createdAt": 1789802255707,
+      "updatedAt": 1789802255707,
+      "source": "client"
+    },
+    {
+      "id": 8,
+      "word": "lay",
+      "translation": "to put something",
+      "category": "Umumiy",
+      "createdAt": 1789802158107,
+      "updatedAt": 1789802158107,
+      "source": "client"
+    },
+    {
+      "id": 9,
+      "word": "absorb",
+      "translation": "shimbolmoq.totakesomething",
+      "category": "Umumiy",
+      "createdAt": 1789802051073,
+      "updatedAt": 1789802051073,
+      "source": "client"
+    },
+    {
+      "id": 10,
+      "word": "harness",
+      "translation": "to control something,",
+      "category": "Umumiy",
+      "createdAt": 1789801627543,
+      "updatedAt": 1789805021992,
+      "source": "client"
+    },
+    {
+      "id": 11,
+      "word": "degrade",
+      "translation": "buzilish",
+      "category": "Umumiy",
+      "createdAt": 1789801473857,
+      "updatedAt": 1789801473857,
+      "source": "client"
+    },
+    {
+      "id": 12,
+      "word": "leaf",
+      "translation": "barglar",
+      "category": "Umumiy",
+      "createdAt": 1789801402717,
+      "updatedAt": 1789801407644,
+      "source": "client"
+    },
+    {
+      "id": 13,
+      "word": "charity",
+      "translation": "xayriya",
+      "category": "Umumiy",
+      "createdAt": 1789795553167,
+      "updatedAt": 1789795553167,
       "source": "client"
     }
   ]
