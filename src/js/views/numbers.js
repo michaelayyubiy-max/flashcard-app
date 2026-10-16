@@ -10,10 +10,14 @@ import { fitAllCardTexts } from '../card-helper.js';
 
 export function renderNumbers(app, router) {
   return () => {
+    const allInitialCards = getAllMillenniumCards();
+    const minCardNum = allInitialCards.length > 0 ? parseInt(allInitialCards[0].number) : 50;
+    const maxCardNum = allInitialCards.length > 0 ? parseInt(allInitialCards[allInitialCards.length - 1].number) : 99;
+
     let currentTab = 'flashcards'; // 'flashcards' | 'database' | 'guide'
-    let selectedBlockId = 'b0'; // Default 000-099
-    let fromNum = 0;
-    let toNum = 99;
+    let selectedBlockId = 'all';
+    let fromNum = minCardNum;
+    let toNum = maxCardNum;
     let isShuffle = false;
     let cardDirection = 'num-to-word'; // 'num-to-word' | 'word-to-num'
     let playMode = 'manual'; // 'manual' | 'auto'
@@ -26,12 +30,16 @@ export function renderNumbers(app, router) {
     }
 
     function renderMain() {
+      const cardsNow = getAllMillenniumCards();
+      const currentMin = cardsNow.length > 0 ? cardsNow[0].number : '050';
+      const currentMax = cardsNow.length > 0 ? cardsNow[cardsNow.length - 1].number : '099';
+
       app.innerHTML = `
         <div class="numbers-page page-enter">
           <!-- Header -->
           <div class="header">
             <button class="header-back" id="btn-back-hub" title="Yo'nalishlar">←</button>
-            <span class="header-title">Raqamlar (000–999)</span>
+            <span class="header-title">Raqamlar (${currentMin}–${currentMax})</span>
             <div class="header-spacer"></div>
           </div>
 
@@ -41,7 +49,7 @@ export function renderNumbers(app, router) {
               🃏 Flesh-karta
             </button>
             <button class="num-tab ${currentTab === 'database' ? 'active' : ''}" id="tab-database">
-              📋 Baza (1000)
+              📋 Baza (${cardsNow.length})
             </button>
             <button class="num-tab ${currentTab === 'guide' ? 'active' : ''}" id="tab-guide">
               ℹ️ CVC Qoidasi
@@ -108,17 +116,17 @@ export function renderNumbers(app, router) {
             <div class="range-inputs" style="margin-top: 14px;">
               <div class="range-field">
                 <label for="num-from">Dan</label>
-                <input type="number" id="num-from" value="${fromNum}" min="0" max="999" inputmode="numeric">
+                <input type="number" id="num-from" value="${fromNum}" min="${minCardNum}" max="${maxCardNum}" inputmode="numeric">
               </div>
               <div class="range-separator">—</div>
               <div class="range-field">
                 <label for="num-to">Gacha</label>
-                <input type="number" id="num-to" value="${toNum}" min="0" max="999" inputmode="numeric">
+                <input type="number" id="num-to" value="${toNum}" min="${minCardNum}" max="${maxCardNum}" inputmode="numeric">
               </div>
             </div>
 
             <div class="range-info" id="num-range-info" style="margin-top: 10px;">
-              <strong>${Math.max(0, toNum - fromNum + 1)}</strong> ta raqam takrorlanadi
+              🎯 <strong>${allInitialCards.filter(c => parseInt(c.number) >= fromNum && parseInt(c.number) <= toNum).length}</strong> ta raqam takrorlanadi (${String(fromNum).padStart(3, '0')} dan ${String(toNum).padStart(3, '0')} gacha)
             </div>
           </div>
 
@@ -195,13 +203,16 @@ export function renderNumbers(app, router) {
       function updateRangeDisplay() {
         let f = parseInt(fromInput.value);
         let t = parseInt(toInput.value);
-        if (isNaN(f)) f = 0;
-        if (isNaN(t)) t = 999;
-        f = Math.max(0, Math.min(f, 999));
-        t = Math.max(f, Math.min(t, 999));
+        if (isNaN(f)) f = minCardNum;
+        if (isNaN(t)) t = maxCardNum;
+        f = Math.max(minCardNum, Math.min(f, maxCardNum));
+        t = Math.max(f, Math.min(t, maxCardNum));
         fromNum = f;
         toNum = t;
-        const count = Math.max(0, toNum - fromNum + 1);
+        const count = allInitialCards.filter(c => {
+          const n = parseInt(c.number);
+          return n >= fromNum && n <= toNum;
+        }).length;
         infoEl.innerHTML = `🎯 <strong>${count}</strong> ta raqam takrorlanadi (${String(fromNum).padStart(3, '0')} dan ${String(toNum).padStart(3, '0')} gacha)`;
       }
 
@@ -278,10 +289,10 @@ export function renderNumbers(app, router) {
       // Start Training
       document.getElementById('btn-start-training').addEventListener('click', () => {
         const all = getAllMillenniumCards();
-        const startIdx = Math.max(0, Math.min(fromNum, 999));
-        const endIdx = Math.max(startIdx, Math.min(toNum, 999));
-
-        let selectedCards = all.slice(startIdx, endIdx + 1);
+        let selectedCards = all.filter(c => {
+          const n = parseInt(c.number);
+          return n >= fromNum && n <= toNum;
+        });
         if (selectedCards.length === 0) {
           showToast('❌ Diapazonda raqamlar topilmadi');
           return;
@@ -291,7 +302,7 @@ export function renderNumbers(app, router) {
           selectedCards = shuffleArray([...selectedCards]);
         }
 
-        startFlashcardSession(selectedCards, startIdx, endIdx);
+        startFlashcardSession(selectedCards, fromNum, toNum);
       });
     }
 
@@ -621,7 +632,7 @@ export function renderNumbers(app, router) {
 
           <!-- Results counter -->
           <div class="db-results-count" id="db-count-label">
-            Jami: 1,000 ta obraz
+            Jami: ${allCards.length} ta obraz
           </div>
 
           <!-- Items List -->
