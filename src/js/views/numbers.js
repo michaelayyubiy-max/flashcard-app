@@ -357,67 +357,61 @@ export function renderNumbers(app, router) {
           `;
 
         app.innerHTML = `
-          <div class="numbers-session page-enter">
-            <!-- Top bar -->
-            <div class="header" style="padding-bottom: 4px;">
-              <button class="header-back" id="btn-exit-session" title="Chiqish">✕</button>
-              <div class="session-range-tag">
-                ${String(startBound).padStart(3, '0')}–${String(endBound).padStart(3, '0')}
-              </div>
-              <button class="header-action" id="btn-finish-session">Tugatish</button>
+          <div class="numbers-session supermiya-layout page-enter">
+            <!-- Top bar: Stopwatch on left, "Hoziroq tugatish" on right -->
+            <div class="supermiya-topbar">
+              <div class="supermiya-timer" id="card-stopwatch">00:00:000</div>
+              <button class="supermiya-finish-btn" id="btn-finish-session">Hoziroq tugatish</button>
             </div>
 
-            <!-- Progress bar -->
-            <div class="session-progress-track">
-              <div class="session-progress-fill" style="width: ${progressPercent}%;"></div>
-            </div>
-
-            <!-- Counter row -->
-            <div class="session-counter-row">
-              <span class="session-counter"><strong>${currentIndex + 1}</strong> / ${cards.length}</span>
-            </div>
-
-            <!-- Sekundomer (5-rasmdagidek: 00:04:720) -->
-            <div class="session-stopwatch-box">
-              <div class="card-stopwatch" id="card-stopwatch">00:00:000</div>
-            </div>
-
-            <!-- 3D Flashcard container -->
-            <div class="flashcard-page" style="padding-top: 4px;">
-              <div class="card-container">
-                <div class="card-wrapper" id="num-card">
-                  <div class="card-inner">
-                    <div class="card-front">${frontContent}</div>
-                    <div class="card-back">${backContent}</div>
-                  </div>
+            <!-- Flashcard container -->
+            <div class="supermiya-card-area">
+              <div class="card-wrapper supermiya-card-wrapper" id="num-card">
+                <div class="card-inner">
+                  <div class="card-front">${frontContent}</div>
+                  <div class="card-back">${backContent}</div>
                 </div>
               </div>
+            </div>
 
-              <!-- Controls -->
-              <div class="card-nav">
-                <button class="card-nav-btn" id="btn-card-prev" ${currentIndex === 0 ? 'disabled' : ''}>
-                  ←
+            <!-- Bottom area: Counter + Navigation arrows -->
+            <div class="supermiya-bottom-area">
+              <div class="supermiya-counter">${currentIndex + 1}/${cards.length}</div>
+              
+              <div class="supermiya-nav-row">
+                <!-- Left arrow: Oldingisi -->
+                <button class="supermiya-nav-btn ${currentIndex === 0 ? 'disabled' : ''}" id="btn-card-prev" ${currentIndex === 0 ? 'disabled' : ''} aria-label="Oldingisi" title="Oldingisi">
+                  <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                  </svg>
                 </button>
-                <button class="card-nav-btn secondary" id="btn-card-flip" title="Aylantirish">
-                  🔄 Aylantirish
+
+                <!-- Middle double arrow: Boshiga qaytish -->
+                <button class="supermiya-nav-btn ${currentIndex === 0 ? 'disabled' : ''}" id="btn-card-first" ${currentIndex === 0 ? 'disabled' : ''} aria-label="Boshiga qaytish" title="Boshiga qaytish">
+                  <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="11 17 6 12 11 7"></polyline>
+                    <polyline points="18 17 13 12 18 7"></polyline>
+                  </svg>
                 </button>
-                <button class="card-nav-btn primary" id="btn-card-next">
-                  ${currentIndex === cards.length - 1 ? '✓' : '→'}
+
+                <!-- Right arrow: Keyingisi -->
+                <button class="supermiya-nav-btn ${currentIndex === cards.length - 1 ? 'disabled' : ''}" id="btn-card-next" aria-label="Keyingisi" title="Keyingisi">
+                  <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                  </svg>
                 </button>
               </div>
 
               ${playMode === 'auto' ? `
-                <div class="auto-play-controls">
+                <div class="auto-play-controls" style="margin-top: 10px; width: 100%; max-width: 280px;">
                   <button class="btn-pause-play" id="btn-toggle-pause">
                     ${isPaused ? '▶️ Davom etish' : '⏸️ Pauza'}
                   </button>
                   <span class="auto-speed-indicator">Tezlik: ${autoSpeedSec}s</span>
                 </div>
-              ` : `
-                <div class="keyboard-hints">
-                  <span>[← / →] o'tkazish</span> · <span>[Bo'shliq] aylantirish</span>
-                </div>
-              `}
+              ` : ''}
             </div>
           </div>
         `;
@@ -438,7 +432,6 @@ export function renderNumbers(app, router) {
         };
 
         cardEl.addEventListener('click', doFlip);
-        document.getElementById('btn-card-flip').addEventListener('click', doFlip);
 
         // Previous (resets card stopwatch from zero)
         document.getElementById('btn-card-prev').addEventListener('click', () => {
@@ -449,27 +442,31 @@ export function renderNumbers(app, router) {
           }
         });
 
+        // Middle button: Go to first card
+        const firstBtn = document.getElementById('btn-card-first');
+        if (firstBtn) {
+          firstBtn.addEventListener('click', () => {
+            if (currentIndex > 0) {
+              if (autoPlayTimer) clearTimeout(autoPlayTimer);
+              currentIndex = 0;
+              renderCard();
+            }
+          });
+        }
+
         // Next (resets card stopwatch from zero)
         document.getElementById('btn-card-next').addEventListener('click', () => {
           goNext();
         });
 
-        // Exit / Finish
-        document.getElementById('btn-exit-session').addEventListener('click', () => {
-          stopTimers();
-          if (window._numKeyHandler) {
-            document.removeEventListener('keydown', window._numKeyHandler);
-            window._numKeyHandler = null;
-          }
-          renderMain();
-        });
+        // Finish session ("Hoziroq tugatish")
         document.getElementById('btn-finish-session').addEventListener('click', () => {
           stopTimers();
           if (window._numKeyHandler) {
             document.removeEventListener('keydown', window._numKeyHandler);
             window._numKeyHandler = null;
           }
-          showResults(cards.length, performance.now() - totalSessionStartTime);
+          showResults(currentIndex + 1, performance.now() - totalSessionStartTime);
         });
 
         // Auto mode toggle pause
