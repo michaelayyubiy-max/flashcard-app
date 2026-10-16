@@ -162,7 +162,7 @@ export function renderAddWord(app, router) {
 
       // Back navigation
       document.getElementById('btn-back').addEventListener('click', () => {
-        router.navigate('/');
+        router.navigate('/words');
       });
 
       // Save word

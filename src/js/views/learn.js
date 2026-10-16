@@ -21,7 +21,7 @@ export function renderLearn(app, router) {
           </div>
         </div>
       `;
-      document.getElementById('btn-back').addEventListener('click', () => router.navigate('/'));
+      document.getElementById('btn-back').addEventListener('click', () => router.navigate('/words'));
       document.getElementById('btn-go-add').addEventListener('click', () => router.navigate('/add'));
       return;
     }
@@ -100,8 +100,8 @@ export function renderLearn(app, router) {
       });
 
       // Back & Finish
-      document.getElementById('btn-back').addEventListener('click', () => router.navigate('/'));
-      document.getElementById('btn-finish').addEventListener('click', () => router.navigate('/'));
+      document.getElementById('btn-back').addEventListener('click', () => router.navigate('/words'));
+      document.getElementById('btn-finish').addEventListener('click', () => router.navigate('/words'));
 
       // Swipe support
       let touchStartX = 0;

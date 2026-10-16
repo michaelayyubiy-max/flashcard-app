@@ -1,6 +1,8 @@
 import '../css/style.css';
 import Router from './router.js';
+import { renderHub } from './views/hub.js';
 import { renderHome } from './views/home.js';
+import { renderNumbers } from './views/numbers.js';
 import { renderAddWord } from './views/add-word.js';
 import { renderLearn } from './views/learn.js';
 import { renderReview } from './views/review.js';
@@ -56,7 +58,9 @@ const router = new Router();
 
 // Register routes
 router
-  .on('/', renderHome(app, router))
+  .on('/', renderHub(app, router))
+  .on('/words', renderHome(app, router))
+  .on('/numbers', renderNumbers(app, router))
   .on('/add', renderAddWord(app, router))
   .on('/learn', renderLearn(app, router))
   .on('/review', renderReview(app, router));
@@ -69,7 +73,7 @@ router.resolve();
 
 // Background Auto Sync
 setupAutoSync((res) => {
-  if (window.location.hash === '#/' || !window.location.hash) {
+  if (window.location.hash === '#/words') {
     router.resolve();
   }
 });

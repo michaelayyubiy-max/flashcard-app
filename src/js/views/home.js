@@ -10,6 +10,12 @@ export function renderHome(app, router) {
 
     app.innerHTML = `
       <div class="home page-enter">
+        <div class="header" style="padding: 0 0 16px 0;">
+          <button class="header-back" id="btn-back-hub" title="Yo'nalishlar">←</button>
+          <span class="header-title">So'zlar Bo'limi</span>
+          <div class="header-spacer"></div>
+        </div>
+
         <div class="home-logo">
           <h1>📚 Flash<span>Cards</span></h1>
           <p>So'zlarni yodla — istalgan joyda</p>
@@ -77,6 +83,10 @@ export function renderHome(app, router) {
     }).catch(() => {});
 
     // Navigation
+    document.getElementById('btn-back-hub')?.addEventListener('click', () => {
+      router.navigate('/');
+    });
+
     document.getElementById('btn-learn').addEventListener('click', () => {
       if (count === 0) {
         showToast('Avval so\'z qo\'shing!');

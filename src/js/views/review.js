@@ -22,7 +22,7 @@ export function renderReview(app, router) {
           </div>
         </div>
       `;
-      document.getElementById('btn-back').addEventListener('click', () => router.navigate('/'));
+      document.getElementById('btn-back').addEventListener('click', () => router.navigate('/words'));
       document.getElementById('btn-go-add').addEventListener('click', () => router.navigate('/add'));
       return;
     }
@@ -108,7 +108,7 @@ export function renderReview(app, router) {
         </div>
       `;
 
-      document.getElementById('btn-back').addEventListener('click', () => router.navigate('/'));
+      document.getElementById('btn-back').addEventListener('click', () => router.navigate('/words'));
 
       const catSelect = document.getElementById('review-category');
       const fromInput = document.getElementById('range-from');
@@ -389,11 +389,11 @@ export function renderReview(app, router) {
           </div>
         `;
 
-        document.getElementById('btn-back').addEventListener('click', () => router.navigate('/'));
+        document.getElementById('btn-back').addEventListener('click', () => router.navigate('/words'));
         document.getElementById('btn-again').addEventListener('click', () => {
           startReview(words, fromNum, toNum, categoryName);
         });
-        document.getElementById('btn-home').addEventListener('click', () => router.navigate('/'));
+        document.getElementById('btn-home').addEventListener('click', () => router.navigate('/words'));
       }
 
       render();
