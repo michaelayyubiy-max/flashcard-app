@@ -63,7 +63,7 @@ export function getMainKeyboard(webAppUrl = WEB_APP_URL) {
   return {
     keyboard: [
       [
-        { text: "🔢 Raqamlar (050–099)", web_app: { url: `${url}/#/numbers` } },
+        { text: "🔢 Raqamlar (000–099)", web_app: { url: `${url}/#/numbers` } },
         { text: "📖 So'zlar", web_app: { url: `${url}/#/words` } }
       ],
       [
@@ -179,8 +179,10 @@ export async function handleTelegramUpdate(update) {
   if (text === '/count' || text === "📊 Statistika") {
     const total = getWordCount();
     const cards = getMillenniumCards();
+    const minNum = cards.length > 0 ? cards[0].number : '000';
+    const maxNum = cards.length > 0 ? cards[cards.length - 1].number : '099';
     await sendMessage(chatId, `📊 <b>Statistika:</b>\n\n` +
-      `🔢 Millennium raqamlari: <b>${cards.length} ta</b> (050–099)\n` +
+      `🔢 Millennium raqamlari: <b>${cards.length} ta</b> (${minNum}–${maxNum})\n` +
       `📖 Foydalanuvchi so'zlari: <b>${total} ta</b>\n\n` +
       `🌐 Sayt: <a href="https://flashcard-app-tluu.onrender.com">flashcard-app-tluu.onrender.com</a>`);
     return;
@@ -364,7 +366,7 @@ export async function setBotCommands() {
   const res = await telegramApi('setMyCommands', {
     commands: [
       { command: 'start', description: 'Botni ishga tushirish va menyu' },
-      { command: 'numbers', description: '🔢 Raqamlar (050–099) Millennium' },
+      { command: 'numbers', description: '🔢 Raqamlar (000–099) Millennium' },
       { command: 'words', description: '📚 So\'zlar ro\'yxati' },
       { command: 'count', description: '📊 Statistika' },
       { command: 'clear', description: '🗑 Barcha so\'zlarni tozalash' },

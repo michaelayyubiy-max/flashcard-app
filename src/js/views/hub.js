@@ -35,7 +35,7 @@ export function renderHub(app, router) {
                 <span class="hash-icon">#</span>
               </div>
               <h3 class="hub-card-title">Raqamlar</h3>
-              <p class="hub-card-desc">050–099 Millennium tizimi</p>
+              <p class="hub-card-desc">000–099 Millennium tizimi (100 ta)</p>
             </div>
 
             <!-- 2. So'zlar (Lug'at va Flashcards) -->

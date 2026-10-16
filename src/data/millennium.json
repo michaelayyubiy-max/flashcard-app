@@ -1,5 +1,305 @@
 [
   {
+    "number": "000",
+    "formula": "0(S) + 0(a) + 0(z)",
+    "word": "Soz",
+    "desc": "Qo'lda chertiladigan torli milliy dutor / soz cholg'usi"
+  },
+  {
+    "number": "001",
+    "formula": "0(Z) + 0(a) + 1(t)",
+    "word": "Zotdor ot",
+    "desc": "Bo'yni baland, yoli shamolda hilpirayotgan qora asil zotdor ot"
+  },
+  {
+    "number": "002",
+    "formula": "0(Z) + 0(a) + 2(n)",
+    "word": "Zanjir",
+    "desc": "Bir-biriga ulangan og'ir, zanglamas yaltiroq temir zanjir"
+  },
+  {
+    "number": "003",
+    "formula": "0(S) + 0(a) + 3(m)",
+    "word": "Samolet",
+    "desc": "Osmonda oq tutun qoldirib uchayotgan kumushrang yo'lovchi samolyot"
+  },
+  {
+    "number": "004",
+    "formula": "0(S) + 0(a) + 4(r)",
+    "word": "Sarimsoq",
+    "desc": "Oq po'stloqli, o'tkir hidli butun sarimsoqpiyoz boshi"
+  },
+  {
+    "number": "005",
+    "formula": "0(S) + 0(a) + 5(l)",
+    "word": "Salat",
+    "desc": "Katta oq likopchada qizil pomidor va yashil bodringli yangi salat"
+  },
+  {
+    "number": "006",
+    "formula": "0(S) + 0(a) + 6(b)",
+    "word": "Sabzi",
+    "desc": "Yashil dumi bor, yangi uzilgan uzun to'q-sariq sabzi"
+  },
+  {
+    "number": "007",
+    "formula": "0(S) + 0(a) + 7(q)",
+    "word": "Saqich",
+    "desc": "Og'izdan katta qilib shishirilgan yopishqoq pushti saqich pufagi"
+  },
+  {
+    "number": "008",
+    "formula": "0(S) + 0(a) + 8(v)",
+    "word": "Savat",
+    "desc": "Tol novdalaridan to'qilgan, ichi mevalarga to'la qalin savat"
+  },
+  {
+    "number": "009",
+    "formula": "0(S) + 0(a) + 9(y)",
+    "word": "Sayg'oq",
+    "desc": "Burni pastga do'ng, ingichka oyoqli, chaqqon sakrovchi cho'l kiyigi"
+  },
+  {
+    "number": "010",
+    "formula": "0(S) + 1(i) + 0(z)",
+    "word": "Sizg'ich",
+    "desc": "Maktab o'quvchisining santimetr belgilari bor sarg'ish yog'och chizg'ichi"
+  },
+  {
+    "number": "011",
+    "formula": "0(S) + 1(i) + 1(t)",
+    "word": "Sitrus (Limon)",
+    "desc": "O'rtasidan teng ikkiga kesilgan, nordon sharbati tomayotgan sariq limon"
+  },
+  {
+    "number": "012",
+    "formula": "0(Z) + 1(i) + 2(n)",
+    "word": "Zina",
+    "desc": "Yuqori qavatga ko'tariluvchi qadamma-qadam yog'och pog'onali zina"
+  },
+  {
+    "number": "013",
+    "formula": "0(S) + 1(i) + 3(m)",
+    "word": "Simkarta",
+    "desc": "Oltin rangli mikrosxemasi bor kichik mobil telefon simkartasi"
+  },
+  {
+    "number": "014",
+    "formula": "0(S) + 1(i) + 4(r)",
+    "word": "Sirg'a",
+    "desc": "Quloqqa taqiladigan, qimmatbaho javohirli yaltiroq oltin sirg'a"
+  },
+  {
+    "number": "015",
+    "formula": "0(S) + 1(i) + 5(l)",
+    "word": "Silindr shlyapa",
+    "desc": "Sehrgarlar kiyadigan baland, qora baxmal silindr bosh kiyimi"
+  },
+  {
+    "number": "016",
+    "formula": "0(Z) + 1(i) + 6(b)",
+    "word": "Zebra",
+    "desc": "Afrika dashtida o'tlab yurgan oq-qora yo'l-yo'l chiziqli jonli zebra"
+  },
+  {
+    "number": "017",
+    "formula": "0(S) + 1(i) + 7(k)",
+    "word": "Siklop",
+    "desc": "Peshonasida bittagina ulkan qonli ko'zi bor bahaybat afsonaviy maxluq"
+  },
+  {
+    "number": "018",
+    "formula": "0(S) + 1(i) + 8(f)",
+    "word": "Sifon",
+    "desc": "Oshxona rakovinasi tagiga o'rnatilgan egri-bugri oq plastik sifon trubasi"
+  },
+  {
+    "number": "019",
+    "formula": "0(S) + 1(i) + 9(g)",
+    "word": "Sigir",
+    "desc": "Bo'ynida qo'ng'irog'i bor, katta shoxli qora-oq ola sigir"
+  },
+  {
+    "number": "020",
+    "formula": "0(S) + 2(u) + 0(z)",
+    "word": "Suzgich",
+    "desc": "Oshxonadagi yog' va suvni o'tkazadigan teshik-teshik metall chovli/suzgich"
+  },
+  {
+    "number": "021",
+    "formula": "0(S) + 2(u) + 1(t)",
+    "word": "Sut",
+    "desc": "Muzdek oppoq qaymoqli sut to'ldirilgan shisha kosa"
+  },
+  {
+    "number": "022",
+    "formula": "0(S) + 2(u) + 2(n)",
+    "word": "Sun'iy yo'ldosh",
+    "desc": "Kosmosda quyosh panellarini yozib turgan metall sun'iy yo'ldosh (sputnik)"
+  },
+  {
+    "number": "023",
+    "formula": "0(S) + 2(u) + 3(m)",
+    "word": "Sumka",
+    "desc": "Qora teridan tikilgan, zamogi yaltirab turgan qalin yo'l sumkasi"
+  },
+  {
+    "number": "024",
+    "formula": "0(S) + 2(u) + 4(r)",
+    "word": "Surnay",
+    "desc": "To'ylarda chalinadigan uchi keng, naqshinkor uzun jez surnay"
+  },
+  {
+    "number": "025",
+    "formula": "0(Z) + 2(u) + 5(l)",
+    "word": "Zuluk",
+    "desc": "Suv idishida burishib suzib yurgan qora shifobaxsh zuluk"
+  },
+  {
+    "number": "026",
+    "formula": "0(S) + 2(u) + 6(p)",
+    "word": "Supurgi",
+    "desc": "Hovli supuradigan dumi bog'langan sariq tabiiy qamish supurgi"
+  },
+  {
+    "number": "027",
+    "formula": "0(S) + 2(u) + 7(k)",
+    "word": "Sukno",
+    "desc": "Bilyard stoli ustiga qoplangan silliq, qalin to'q yashil movut mato"
+  },
+  {
+    "number": "028",
+    "formula": "0(S) + 2(u) + 8(v)",
+    "word": "Suvarak",
+    "desc": "Burchakdan tez yugurib o'tgan uzun mo'ylovli qizil-jigarrang hasharot"
+  },
+  {
+    "number": "029",
+    "formula": "0(S) + 2(u) + 9(y)",
+    "word": "Suyak",
+    "desc": "It tishlab olgan ikki uchi yo'g'on oppoq yirik ilik suyagi"
+  },
+  {
+    "number": "030",
+    "formula": "0(S) + 3(e) + 0(z)",
+    "word": "Sezar",
+    "desc": "Boshiga oltin lavr chambari kiygan, qizil plashli qadimgi Rim imperatori"
+  },
+  {
+    "number": "031",
+    "formula": "0(S) + 3(e) + 1(t)",
+    "word": "Setka",
+    "desc": "Futbol darvozasiga tortilgan oq to'qilgan to'r (setka)"
+  },
+  {
+    "number": "032",
+    "formula": "0(Z) + 3(e) + 2(n)",
+    "word": "Zenitka",
+    "desc": "Osmondagi nishonlarga qaratilgan ikkita stvolli og'ir harbiy to'p quroli"
+  },
+  {
+    "number": "033",
+    "formula": "0(S) + 3(e) + 3(m)",
+    "word": "Sement",
+    "desc": "Qurilish maydonidagi cheti yirtilib kulrang kukun to'kilgan sement qopi"
+  },
+  {
+    "number": "034",
+    "formula": "0(S) + 3(e) + 4(r)",
+    "word": "Serfing taxtasi",
+    "desc": "Okean to'lqinlari ustida suzadigan o'tkir uchli naqshli rangdor taxta"
+  },
+  {
+    "number": "035",
+    "formula": "0(S) + 3(e) + 5(l)",
+    "word": "Selfi-tayoq",
+    "desc": "Uchiga smartfon o'rnatilgan cho'ziluvchan metall shtativ / selfi tayoq"
+  },
+  {
+    "number": "036",
+    "formula": "0(S) + 3(e) + 6(p)",
+    "word": "Sep sandig'i",
+    "desc": "Kelin sepi uchun tayyorlangan qizil baxmal qoplangan naqshli sandiq"
+  },
+  {
+    "number": "037",
+    "formula": "0(S) + 3(e) + 7(k)",
+    "word": "Sekundomer",
+    "desc": "Tugmasini bossa qizil mili aylanadigan yumaloq sport xronometri"
+  },
+  {
+    "number": "038",
+    "formula": "0(S) + 3(e) + 8(f)",
+    "word": "Seyf",
+    "desc": "Qalin po'lat eshigi va raqamli burama qulfi bor og'ir temir seyf"
+  },
+  {
+    "number": "039",
+    "formula": "0(S) + 3(e) + 9(g)",
+    "word": "Segvey",
+    "desc": "Ikkita yonbosh gildiraqli, ruli bor tik turib boshqariladigan elektr segvey"
+  },
+  {
+    "number": "040",
+    "formula": "0(S) + 4(o) + 0(s)",
+    "word": "Sous idishi",
+    "desc": "Ichida quyuq qizil tomat sousi qaynab turgan tutqichli kichik metall idish"
+  },
+  {
+    "number": "041",
+    "formula": "0(S) + 4(o) + 1(d)",
+    "word": "Soda",
+    "desc": "Oshxona tokchasidagi to'q sariq-oq qutidagi osh sodasi"
+  },
+  {
+    "number": "042",
+    "formula": "0(S) + 4(o) + 2(n)",
+    "word": "So'na",
+    "desc": "Hayvonlarga yopishadigan qanotlari shaffof, katta qora chaquvchi pashsha"
+  },
+  {
+    "number": "043",
+    "formula": "0(S) + 4(o) + 3(m)",
+    "word": "Somsa",
+    "desc": "Ustiga sedana sepilgan, qarsildoq qatlama issiq tandir go'shtli somsasi"
+  },
+  {
+    "number": "044",
+    "formula": "0(S) + 4(o) + 4(ch)",
+    "word": "Soch",
+    "desc": "Qiz bolaning orqasiga tushib turgan uzun qalin qora o'rilgan sochi"
+  },
+  {
+    "number": "045",
+    "formula": "0(S) + 4(o) + 5(l)",
+    "word": "Sol",
+    "desc": "Bir-biriga arqon bilan mahkamlangan bir nechta qalin xodali yog'och sol"
+  },
+  {
+    "number": "046",
+    "formula": "0(S) + 4(o) + 6(v)",
+    "word": "Sovun",
+    "desc": "Qo'lda ushlaganda oppoq ko'pik hosil qiluvchi pushti atir sovuni"
+  },
+  {
+    "number": "047",
+    "formula": "0(S) + 4(o) + 7(k)",
+    "word": "Sok",
+    "desc": "Ustida olmaning rasmi va yoniga egik naycha (trubochka) yopishtirilgan sok qutisi"
+  },
+  {
+    "number": "048",
+    "formula": "0(S) + 4(o) + 8(f)",
+    "word": "Sofa",
+    "desc": "Mehmonxonada turgan qalin yumshoq yostiqchali baxmal divan / sofa"
+  },
+  {
+    "number": "049",
+    "formula": "0(S) + 4(o) + 9(y)",
+    "word": "Soya sousi",
+    "desc": "Sushi yoniga qo'yiladigan kichik shisha idishdagi quyuq to'q qora yaponcha sous"
+  },
+  {
     "number": "050",
     "formula": "0(S) + 5(a) + 0(z)",
     "word": "Sassiqko'zan",
