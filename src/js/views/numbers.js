@@ -312,7 +312,6 @@ export function renderNumbers(app, router) {
     function startFlashcardSession(cards, startBound, endBound) {
       let currentIndex = 0;
       let isFlipped = false;
-      const totalSessionStartTime = performance.now();
       let cardStartTime = performance.now();
       let cardTimerInterval = null;
       let autoPlayTimer = null;
@@ -320,9 +319,27 @@ export function renderNumbers(app, router) {
       let pauseStartTime = 0;
       let pausedDurationOnCard = 0;
 
+      // Per-card stopwatch tracking
+      const cardTimeSpent = {}; // index -> accumulated milliseconds
+      const visitedIndices = []; // array of visited card indices in order of first appearance
+
       function stopTimers() {
         if (cardTimerInterval) clearInterval(cardTimerInterval);
         if (autoPlayTimer) clearTimeout(autoPlayTimer);
+      }
+
+      function recordCurrentCardTime() {
+        if (currentIndex >= 0 && currentIndex < cards.length) {
+          let currentPaused = pausedDurationOnCard;
+          if (isPaused && pauseStartTime > 0) {
+            currentPaused += (performance.now() - pauseStartTime);
+          }
+          const elapsed = Math.max(0, performance.now() - cardStartTime - currentPaused);
+          cardTimeSpent[currentIndex] = (cardTimeSpent[currentIndex] || 0) + elapsed;
+          if (!visitedIndices.includes(currentIndex)) {
+            visitedIndices.push(currentIndex);
+          }
+        }
       }
 
       function startCardStopwatch() {
@@ -346,7 +363,9 @@ export function renderNumbers(app, router) {
       function renderCard() {
         const item = cards[currentIndex];
         isFlipped = false;
-        const progressPercent = Math.round(((currentIndex + 1) / cards.length) * 100);
+        if (!visitedIndices.includes(currentIndex)) {
+          visitedIndices.push(currentIndex);
+        }
 
         // Clean card contents: No badges, no formulas, no prompts
         const frontContent = cardDirection === 'num-to-word'
@@ -448,6 +467,7 @@ export function renderNumbers(app, router) {
         // Previous (resets card stopwatch from zero)
         document.getElementById('btn-card-prev').addEventListener('click', () => {
           if (currentIndex > 0) {
+            recordCurrentCardTime();
             triggerTelegramHaptic('selection');
             if (autoPlayTimer) clearTimeout(autoPlayTimer);
             currentIndex--;
@@ -460,6 +480,7 @@ export function renderNumbers(app, router) {
         if (firstBtn) {
           firstBtn.addEventListener('click', () => {
             if (currentIndex > 0) {
+              recordCurrentCardTime();
               triggerTelegramHaptic('selection');
               if (autoPlayTimer) clearTimeout(autoPlayTimer);
               currentIndex = 0;
@@ -476,12 +497,13 @@ export function renderNumbers(app, router) {
 
         // Finish session ("Hoziroq tugatish")
         document.getElementById('btn-finish-session').addEventListener('click', () => {
+          recordCurrentCardTime();
           stopTimers();
           if (window._numKeyHandler) {
             document.removeEventListener('keydown', window._numKeyHandler);
             window._numKeyHandler = null;
           }
-          showResults(currentIndex + 1, performance.now() - totalSessionStartTime);
+          showResults();
         });
 
         // Auto mode toggle pause
@@ -518,6 +540,7 @@ export function renderNumbers(app, router) {
 
         function goNext() {
           if (autoPlayTimer) clearTimeout(autoPlayTimer);
+          recordCurrentCardTime();
           if (currentIndex < cards.length - 1) {
             triggerTelegramHaptic('selection');
             currentIndex++;
@@ -525,7 +548,7 @@ export function renderNumbers(app, router) {
           } else {
             triggerTelegramHaptic('medium');
             stopTimers();
-            showResults(cards.length, performance.now() - totalSessionStartTime);
+            showResults();
           }
         }
 
@@ -539,8 +562,10 @@ export function renderNumbers(app, router) {
           touchEndX = e.changedTouches[0].screenX;
           const diff = touchStartX - touchEndX;
           if (Math.abs(diff) > 50) {
-            if (diff > 0) goNext();
-            else if (currentIndex > 0) {
+            if (diff > 0) {
+              goNext();
+            } else if (currentIndex > 0) {
+              recordCurrentCardTime();
               currentIndex--;
               renderCard();
             }
@@ -552,6 +577,7 @@ export function renderNumbers(app, router) {
           if (e.key === 'ArrowRight') {
             goNext();
           } else if (e.key === 'ArrowLeft' && currentIndex > 0) {
+            recordCurrentCardTime();
             currentIndex--;
             renderCard();
           } else if (e.key === ' ' || e.key === 'Enter') {
@@ -567,45 +593,48 @@ export function renderNumbers(app, router) {
         window._numKeyHandler = keyHandler;
       }
 
-      function showResults(totalCount, totalMs) {
+      function showResults() {
+        stopTimers();
         if (window._numKeyHandler) {
           document.removeEventListener('keydown', window._numKeyHandler);
+          window._numKeyHandler = null;
         }
 
-        const totalSec = totalMs / 1000;
-        const perCard = (totalSec / totalCount).toFixed(2);
+        // Ensure visitedIndices has at least first card if empty
+        if (visitedIndices.length === 0 && cards.length > 0) {
+          visitedIndices.push(0);
+          cardTimeSpent[0] = cardTimeSpent[0] || 0;
+        }
+
+        // Calculate total time strictly from sum of card times
+        const totalMs = visitedIndices.reduce((sum, idx) => sum + (cardTimeSpent[idx] || 0), 0);
+
+        const itemsHtml = visitedIndices.map(idx => {
+          const item = cards[idx];
+          if (!item) return '';
+          const spent = cardTimeSpent[idx] || 0;
+          return `
+            <div class="supermiya-result-item">
+              ${escapeHtml(item.number)} - ${escapeHtml(item.word)} (${formatStopwatchMilli(spent)})
+            </div>
+          `;
+        }).join('');
 
         app.innerHTML = `
-          <div class="results-page page-enter">
-            <div class="results-card">
-              <div class="results-icon">🏆</div>
-              <div class="results-title">Mashg'ulot yakunlandi!</div>
-              <div class="results-subtitle">Millennium 000–999 Flesh-karta natijasi</div>
+          <div class="supermiya-results-page page-enter">
+            <!-- Top bar: Left "Orqaga qaytish", Right "Jami: mm:ss:mmm" -->
+            <div class="supermiya-results-topbar">
+              <button class="supermiya-results-back" id="btn-back-setup">Orqaga qaytish</button>
+              <div class="supermiya-results-total">Jami: ${formatStopwatchMilli(totalMs)}</div>
+            </div>
 
-              <div class="results-stats">
-                <div class="results-stat">
-                  <div class="results-stat-value">${formatStopwatch(totalMs)}</div>
-                  <div class="results-stat-label">Jami vaqt</div>
-                </div>
-                <div class="results-stat">
-                  <div class="results-stat-value">${perCard}s</div>
-                  <div class="results-stat-label">Har bir raqam</div>
-                </div>
-                <div class="results-stat">
-                  <div class="results-stat-value">${totalCount} ta</div>
-                  <div class="results-stat-label">Bajarildi</div>
-                </div>
-              </div>
-
-              <button class="btn-restart" id="btn-repeat">🔄 Qayta takrorlash</button>
-              <button class="btn-home" id="btn-back-setup">⚙️ Sozlamalarga qaytish</button>
+            <!-- List of cards with individual time spent -->
+            <div class="supermiya-results-list" id="results-items-list">
+              ${itemsHtml}
             </div>
           </div>
         `;
 
-        document.getElementById('btn-repeat').addEventListener('click', () => {
-          startFlashcardSession(cards, startBound, endBound);
-        });
         document.getElementById('btn-back-setup').addEventListener('click', () => {
           renderMain();
         });

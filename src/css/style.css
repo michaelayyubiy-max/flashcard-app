@@ -2083,3 +2083,94 @@ a {
   border-bottom: none;
 }
 
+/* ═════════════════════════════════════════════════════════
+   SUPERMIYA RESULTS REPORT SCREEN (PER-CARD TIME BREAKDOWN)
+   ═════════════════════════════════════════════════════════ */
+.supermiya-results-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  max-width: 440px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.supermiya-results-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 18px 24px 12px;
+  box-sizing: border-box;
+  background: var(--bg);
+  flex-shrink: 0;
+}
+
+.supermiya-results-back {
+  background: transparent;
+  border: none;
+  padding: 4px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #d18a51;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s ease;
+}
+
+.supermiya-results-back:hover {
+  opacity: 0.8;
+}
+
+.supermiya-results-total {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.2px;
+}
+
+[data-theme="dark"] .supermiya-results-total {
+  color: #f3f4f6;
+}
+
+.supermiya-results-list {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 14px 24px 48px 52px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  box-sizing: border-box;
+}
+
+.supermiya-result-item {
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: #111827;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  word-break: break-word;
+}
+
+[data-theme="dark"] .supermiya-result-item {
+  color: #e5e7eb;
+}
+
+@media (max-width: 380px) {
+  .supermiya-results-topbar {
+    padding: 14px 16px 10px;
+  }
+  .supermiya-results-list {
+    padding: 10px 16px 36px 32px;
+  }
+  .supermiya-result-item {
+    font-size: 14.5px;
+  }
+}
+
