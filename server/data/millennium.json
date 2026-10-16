@@ -1,0 +1,302 @@
+[
+  {
+    "number": "050",
+    "formula": "0(S) + 5(a) + 0(z)",
+    "word": "Sassiqko'zan",
+    "desc": "Qalin yumshoq terili, xavf tug'ilganda o'tkir hid tarqatuvchi kichik chaqqon hayvon"
+  },
+  {
+    "number": "051",
+    "formula": "0(S) + 5(a) + 1(d)",
+    "word": "Sadparg",
+    "desc": "Iforli, qat-qat baxmal qizil barglari bor butun boshli ochilgan sadparg (atirgul) guli"
+  },
+  {
+    "number": "052",
+    "formula": "0(S) + 5(a) + 2(n)",
+    "word": "Sandiq",
+    "desc": "Qopqog'ida osma qulfi bor, jez naqshlar bilan bezatilgan qadimiy yog'och sandiq"
+  },
+  {
+    "number": "053",
+    "formula": "0(S) + 5(a) + 3(m)",
+    "word": "Somon bog'lami",
+    "desc": "Pishiq arqon bilan to'rtburchak qilib zich bog'langan quruq sariq somon g'arami"
+  },
+  {
+    "number": "054",
+    "formula": "0(Z) + 5(a) + 4(r)",
+    "word": "Zarxal tanga",
+    "desc": "Quyoshda yarqirab ko'zni qamashtiruvchi qalin sof oltin qoplamali qadimiy tanga"
+  },
+  {
+    "number": "055",
+    "formula": "0(S) + 5(a) + 5(l)",
+    "word": "Salla",
+    "desc": "Oppoq shoyi matodan boshga mahorat bilan o'ralgan gumbazsimon sharqona salla"
+  },
+  {
+    "number": "056",
+    "formula": "0(Z) + 5(a) + 6(b)",
+    "word": "Zobit",
+    "desc": "Yelkasida oltin pogonlari, ko'kragida medallari bor to'q yashil mundirli qat'iy ofitser"
+  },
+  {
+    "number": "057",
+    "formula": "0(S) + 5(a) + 7(k)",
+    "word": "Sakkizoyoq",
+    "desc": "Suv tubida sakkizta so'rg'ichli egiluvchan uzun paypaslagichlarini qimirlatib turgan osminog"
+  },
+  {
+    "number": "058",
+    "formula": "0(S) + 5(a) + 8(f)",
+    "word": "Safsar gul",
+    "desc": "Ingichka yashil poyada ochilgan yorqin binafsharang nozik safsar (iris) guli"
+  },
+  {
+    "number": "059",
+    "formula": "0(S) + 5(a) + 9(y)",
+    "word": "Sayr aravasi",
+    "desc": "Kichik bolalarni olib yuradigan qulay g'ildirakli, soyaboni bor buklanuvchi kolyaska"
+  },
+  {
+    "number": "060",
+    "formula": "0(S) + 6(i) + 0(z)",
+    "word": "Sizg'iroq (Hushtak)",
+    "desc": "Hakamning bo'yniga osilgan, baland o'tkir ovoz chiqaruvchi yaltiroq metall hushtak"
+  },
+  {
+    "number": "061",
+    "formula": "0(S) + 6(i) + 1(t)",
+    "word": "Sitora",
+    "desc": "Ko'krakka taqiladigan, besh qirrali javohir ko'zlari bor yaltiroq oltin yulduzcha nishon"
+  },
+  {
+    "number": "062",
+    "formula": "0(S) + 6(i) + 2(n)",
+    "word": "Sinch",
+    "desc": "An'anaviy imorat devori ichiga qadab terilgan to'rtburchak pishiq yog'och karkas / sinch"
+  },
+  {
+    "number": "063",
+    "formula": "0(S) + 6(i) + 3(m)",
+    "word": "Tikanli sim",
+    "desc": "Yog'och g'altakka o'ralgan, har besh santimetrda o'tkir tikanlari bor po'lat sim"
+  },
+  {
+    "number": "064",
+    "formula": "0(S) + 6(i) + 4(r)",
+    "word": "Sirka idishi",
+    "desc": "Oshxona javonidagi ingichka bo'yinli shisha idishda turgan tiniq o'tkir hidli sirka"
+  },
+  {
+    "number": "065",
+    "formula": "0(S) + 6(i) + 5(l)",
+    "word": "Silikon to'pponcha",
+    "desc": "Uchiga kley trubkasi solingan, dastagi bosilganda yelim chiqaradigan quruvchi asbobi"
+  },
+  {
+    "number": "066",
+    "formula": "0(S) + 6(i) + 6(p)",
+    "word": "Sipoh",
+    "desc": "Qo'lida uzun nayza, boshida temir dubulg'a kiygan ot ustidagi qadimiy o'zbek sipohi (jangchisi)"
+  },
+  {
+    "number": "067",
+    "formula": "0(S) + 6(i) + 7(k)",
+    "word": "Siqma bo'yoq",
+    "desc": "Rassom kaftida ezib ochgan, qizil rangli moybo'yoq chiqib turgan metall tyubik"
+  },
+  {
+    "number": "068",
+    "formula": "0(S) + 6(i) + 8(f)",
+    "word": "Siferblat",
+    "desc": "Qora arab raqamlari va yaltiroq oltin millari bor dumaloq oq emalli soat yuzi"
+  },
+  {
+    "number": "069",
+    "formula": "0(S) + 6(i) + 9(g)",
+    "word": "Sigara",
+    "desc": "Kuldonda tutab turgan, ustiga qizil qog'oz halqasi kiygizilgan qalin jigarrang tamaki sigarasi"
+  },
+  {
+    "number": "070",
+    "formula": "0(S) + 7(u) + 0(z)",
+    "word": "Suzuvchi",
+    "desc": "Boshiga qora rezina shapka, ko'ziga suzish ko'zoynagi taqqan yelkalari keng sportchi"
+  },
+  {
+    "number": "071",
+    "formula": "0(S) + 7(u) + 1(d)",
+    "word": "Sudya bolg'asi",
+    "desc": "Yumaloq yog'och taglikka zarb bilan uriladigan qattiq laklangan jigar rang bolg'acha"
+  },
+  {
+    "number": "072",
+    "formula": "0(S) + 7(u) + 2(n)",
+    "word": "Sunbula",
+    "desc": "Kuzda o'rib olingan, ichi to'liq sariq donlarga to'la yaltiroq bug'doy boshoqlari dumi"
+  },
+  {
+    "number": "073",
+    "formula": "0(S) + 7(u) + 3(m)",
+    "word": "Sumalak qozoni",
+    "desc": "O'choqda qaynayotgan, ichidan bug' ko'tarilib turgan ulkan qora cho'yan doshqozon"
+  },
+  {
+    "number": "074",
+    "formula": "0(S) + 7(u) + 4(r)",
+    "word": "Ramkali surat",
+    "desc": "Zarhallangan qalin yog'och ramka ichiga solingan devorga ilinadigan san'at asari"
+  },
+  {
+    "number": "075",
+    "formula": "0(S) + 7(u) + 5(l)",
+    "word": "Suli doni",
+    "desc": "Kichik qopchadan to'kilib turgan yaltiroq po'stloqli sariq ozuqa donalari"
+  },
+  {
+    "number": "076",
+    "formula": "0(S) + 7(u) + 6(p)",
+    "word": "Suv qovoq",
+    "desc": "Quritilib, ichi o'yib ichimlik saqlash uchun belbog'ga bog'langan sarg'ish qadimiy qovoq idish"
+  },
+  {
+    "number": "077",
+    "formula": "0(Z) + 7(u) + 7(k)",
+    "word": "Zuhro ko'zgusi",
+    "desc": "Tutqichi tilla hoshiyali, orqasida naqshlari bor qadimgi yuz ko'radigan yaltiroq ko'zgu"
+  },
+  {
+    "number": "078",
+    "formula": "0(S) + 7(u) + 8(f)",
+    "word": "Sufra",
+    "desc": "Oshxona burchagidagi un yuqi bor, dumaloq qalin tekis yog'och xamir yoyish taxtasi"
+  },
+  {
+    "number": "079",
+    "formula": "0(S) + 7(u) + 9(y)",
+    "word": "Suvoq kuragi",
+    "desc": "Ustasi ganch va qorishmani devorga tekislaydigan po'lat pichoqli yog'och tutqichli kurakcha (molga)"
+  },
+  {
+    "number": "080",
+    "formula": "0(S) + 8(e) + 0(z)",
+    "word": "Radar antennasi",
+    "desc": "Binoning tomida sekin aylanib osmondan to'lqinlarni qabul qiluvchi to'rsimon metall likopcha"
+  },
+  {
+    "number": "081",
+    "formula": "0(S) + 8(e) + 1(d)",
+    "word": "Sedana",
+    "desc": "Issiq non ustiga qora nuqta bo'lib sepilgan xushbo'y mayda shifobaxsh qora sedana donalari"
+  },
+  {
+    "number": "082",
+    "formula": "0(S) + 8(e) + 2(n)",
+    "word": "Senator",
+    "desc": "Yog'och minbar ortida turib mikrofonga qo'lini ko'tarib nutq so'zlayotgan qora kostyumli arbob"
+  },
+  {
+    "number": "083",
+    "formula": "0(S) + 8(e) + 3(m)",
+    "word": "Semiz mushuk",
+    "desc": "Kresloda qornini osmonga qilib yotgan, o'ta semiz qalin malla junli xonaki mushuk"
+  },
+  {
+    "number": "084",
+    "formula": "0(S) + 8(e) + 4(r)",
+    "word": "Sirena",
+    "desc": "Tez yordam mashinasi tomiga o'rnatilgan, aylanib qizil-ko'k yorug'lik sochuvchi signal chirog'i"
+  },
+  {
+    "number": "085",
+    "formula": "0(S) + 8(e) + 5(l)",
+    "word": "Selofan xalta",
+    "desc": "Qo'lda ushlanganda qirsillab ovoz chiqaruvchi shaffof polietilen yaltiroq xalta"
+  },
+  {
+    "number": "086",
+    "formula": "0(S) + 8(e) + 6(p)",
+    "word": "Sepkilli yuz",
+    "desc": "Burni va yonoqlarida ko'plab qizg'ish-jigarrang mayda sepkillari bor tabassumli bolakay"
+  },
+  {
+    "number": "087",
+    "formula": "0(S) + 8(e) + 7(k)",
+    "word": "Sekator",
+    "desc": "Bog'bonning mevali daraxt shoxlarini shiqillatib kesadigan kuchli prujinali po'lat qaychisi"
+  },
+  {
+    "number": "088",
+    "formula": "0(Z) + 8(e) + 8(f)",
+    "word": "Zefir",
+    "desc": "Shisha idishda turgan, tishlaganda erib ketuvchi oppoq, yumshoq qandolat shirinligi"
+  },
+  {
+    "number": "089",
+    "formula": "0(Z) + 8(e) + 9(y)",
+    "word": "Zaytun mevasi",
+    "desc": "Yashil bargli shoxchada osilib turgan moyli, yaltiroq to'q qora yumaloq zaytun"
+  },
+  {
+    "number": "090",
+    "formula": "0(S) + 9(o) + 0(z)",
+    "word": "Sozlagich kalit",
+    "desc": "Og'zi g'ildirakcha orqali har xil o'lchamdagi gaykalarga moslanuvchi og'ir po'lat klyuch"
+  },
+  {
+    "number": "091",
+    "formula": "0(S) + 9(o) + 1(d)",
+    "word": "Sotuvchi tarozisi",
+    "desc": "Bozor peshtaxtasidagi ikkita yaltiroq jez pallasi va og'ir toshlari bor muvozanatli tarozi"
+  },
+  {
+    "number": "092",
+    "formula": "0(S) + 9(o) + 2(n)",
+    "word": "Soniya mili",
+    "desc": "Devor soati yuzida to'xtovsiz qadam tashlab aylanayotgan nozik qizil soniya ko'rsatkichi"
+  },
+  {
+    "number": "093",
+    "formula": "0(S) + 9(o) + 3(m)",
+    "word": "Som baliq",
+    "desc": "Suv tubida suzuvchi terisi shilimshiq, jag'ida uzun mo'ylovlari bor yirtqich laqqa baliq"
+  },
+  {
+    "number": "094",
+    "formula": "0(S) + 9(o) + 4(r)",
+    "word": "Sor qushi",
+    "desc": "Qoyatosh ustida qanotlarini yozib o'tirgan, o'tkir ko'zli va egri tumshuqli qirg'iy qushi"
+  },
+  {
+    "number": "095",
+    "formula": "0(S) + 9(o) + 5(l)",
+    "word": "Soliqchi portfeli",
+    "desc": "Qora tabiiy charmdan tikilgan, burchaklariga temir qadalgan qalin amaldor portfeli"
+  },
+  {
+    "number": "096",
+    "formula": "0(S) + 9(o) + 6(v)",
+    "word": "Temir sovut",
+    "desc": "Qadimgi bahodir egniga kiygan, minglab kichik po'lat halqalardan to'qilgan yaltiroq zirh"
+  },
+  {
+    "number": "097",
+    "formula": "0(S) + 9(o) + 7(q)",
+    "word": "Oppoq soqol",
+    "desc": "Keksa otaxonning ko'kragiga qadar tushgan oppoq, silliq taralgan qalin soqoli"
+  },
+  {
+    "number": "098",
+    "formula": "0(S) + 9(o) + 8(r)",
+    "word": "Yog'och so'ri",
+    "desc": "Hovlidagi tok tagiga qo'yilgan, to'rt burchagida ustuni bor yog'och supacha (xontaxtali so'ri)"
+  },
+  {
+    "number": "099",
+    "formula": "0(Z) + 9(o) + 9(g')",
+    "word": "Zog' (Qora qarg'a)",
+    "desc": "Daraxtning eng baland quruq shoxida qag'illab qanot qoqqan qop-qora zog' qushi"
+  }
+]

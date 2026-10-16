@@ -5,7 +5,7 @@ import {
   resetMillenniumCard,
   BLOCKS
 } from '../millennium-data.js';
-import { showToast } from '../app.js';
+import { showToast, triggerTelegramHaptic } from '../app.js';
 import { fitAllCardTexts } from '../card-helper.js';
 
 export function renderNumbers(app, router) {
@@ -438,6 +438,7 @@ export function renderNumbers(app, router) {
         const cardEl = document.getElementById('num-card');
         const doFlip = () => {
           isFlipped = !isFlipped;
+          triggerTelegramHaptic('light');
           cardEl.classList.toggle('flipped', isFlipped);
           fitAllCardTexts(cardEl);
         };
@@ -447,6 +448,7 @@ export function renderNumbers(app, router) {
         // Previous (resets card stopwatch from zero)
         document.getElementById('btn-card-prev').addEventListener('click', () => {
           if (currentIndex > 0) {
+            triggerTelegramHaptic('selection');
             if (autoPlayTimer) clearTimeout(autoPlayTimer);
             currentIndex--;
             renderCard();
@@ -458,6 +460,7 @@ export function renderNumbers(app, router) {
         if (firstBtn) {
           firstBtn.addEventListener('click', () => {
             if (currentIndex > 0) {
+              triggerTelegramHaptic('selection');
               if (autoPlayTimer) clearTimeout(autoPlayTimer);
               currentIndex = 0;
               renderCard();
@@ -467,6 +470,7 @@ export function renderNumbers(app, router) {
 
         // Next (resets card stopwatch from zero)
         document.getElementById('btn-card-next').addEventListener('click', () => {
+          triggerTelegramHaptic('selection');
           goNext();
         });
 
@@ -515,9 +519,11 @@ export function renderNumbers(app, router) {
         function goNext() {
           if (autoPlayTimer) clearTimeout(autoPlayTimer);
           if (currentIndex < cards.length - 1) {
+            triggerTelegramHaptic('selection');
             currentIndex++;
             renderCard();
           } else {
+            triggerTelegramHaptic('medium');
             stopTimers();
             showResults(cards.length, performance.now() - totalSessionStartTime);
           }

@@ -35,8 +35,21 @@ export function showToast(message) {
 }
 
 // ═══════════════════════════════════════
-// Telegram Web App Init
 // ═══════════════════════════════════════
+// Telegram Web App Init & Native Controls
+// ═══════════════════════════════════════
+export function triggerTelegramHaptic(type = 'light') {
+  try {
+    if (window.Telegram?.WebApp?.HapticFeedback) {
+      if (type === 'selection') {
+        window.Telegram.WebApp.HapticFeedback.selectionChanged();
+      } else {
+        window.Telegram.WebApp.HapticFeedback.impactOccurred(type);
+      }
+    }
+  } catch (e) {}
+}
+
 if (window.Telegram?.WebApp) {
   try {
     const tg = window.Telegram.WebApp;
@@ -45,6 +58,23 @@ if (window.Telegram?.WebApp) {
     if (typeof tg.setHeaderColor === 'function') tg.setHeaderColor('#d69358');
     if (typeof tg.setBackgroundColor === 'function') tg.setBackgroundColor('#f8f9fa');
     if (typeof tg.enableClosingConfirmation === 'function') tg.enableClosingConfirmation();
+
+    // Hook native Telegram Back Button to SPA Router
+    if (tg.BackButton) {
+      const handleBackVisibility = () => {
+        const hash = window.location.hash || '#/';
+        if (hash === '#/' || hash === '#' || hash === '') {
+          tg.BackButton.hide();
+        } else {
+          tg.BackButton.show();
+        }
+      };
+      window.addEventListener('hashchange', handleBackVisibility);
+      tg.BackButton.onClick(() => {
+        window.location.hash = '#/';
+      });
+      handleBackVisibility();
+    }
   } catch (e) {
     console.warn('Telegram WebApp init warning:', e);
   }

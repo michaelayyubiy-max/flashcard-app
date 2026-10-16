@@ -77,6 +77,21 @@ app.delete('/api/categories/:name', (req, res) => {
   }
 });
 
+// GET all millennium cards
+app.get('/api/millennium', (req, res) => {
+  try {
+    const filePath = path.join(__dirname, 'data/millennium.json');
+    if (fs.existsSync(filePath)) {
+      const cards = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      res.json({ success: true, count: cards.length, cards });
+    } else {
+      res.json({ success: true, count: 0, cards: [] });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // GET all words
 app.get('/api/words', (req, res) => {
   try {
@@ -166,7 +181,8 @@ if (fs.existsSync(DIST_DIR)) {
         filePath.endsWith('sw.js') ||
         filePath.endsWith('registerSW.js') ||
         filePath.endsWith('index.html') ||
-        filePath.endsWith('.webmanifest')
+        filePath.endsWith('.webmanifest') ||
+        filePath.endsWith('.json')
       ) {
         res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
         res.setHeader('Pragma', 'no-cache');
