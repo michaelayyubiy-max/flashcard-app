@@ -1612,15 +1612,46 @@ a {
   letter-spacing: -0.5px;
 }
 
+.session-counter-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2px;
+}
+
 .session-counter {
-  font-size: 15px;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--text-secondary);
+}
+
+.session-stopwatch-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 6px 0 10px;
+}
+
+.card-stopwatch {
+  font-size: 42px;
+  font-weight: 800;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 1px;
+  color: #111827;
+  line-height: 1;
+  text-align: center;
+  user-select: none;
+}
+
+[data-theme="dark"] .card-stopwatch {
+  color: #f9fafb;
 }
 
 .session-progress-track {
   height: 4px;
   background: #e2e8f0;
-  margin: 0 20px 10px;
+  margin: 0 20px 8px;
   border-radius: 2px;
   overflow: hidden;
 }
@@ -1632,74 +1663,46 @@ a {
   transition: width 0.2s ease-out;
 }
 
-.card-num-badge {
-  display: inline-block;
-  background: var(--primary);
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 1px;
-  padding: 4px 10px;
-  border-radius: 12px;
-  margin-bottom: 12px;
+.numbers-session .flashcard-page {
+  height: auto;
+  min-height: 340px;
+}
+
+.numbers-session .card-wrapper {
+  min-height: 280px;
+  height: 320px;
+  max-width: 380px;
 }
 
 .num-huge {
-  font-size: 68px !important;
+  font-size: 72px !important;
   font-weight: 800 !important;
-  color: #1a1a1a !important;
-  letter-spacing: -2px !important;
+  color: #ffffff !important;
+  letter-spacing: -1px !important;
   line-height: 1 !important;
-}
-
-.card-formula-hint {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  margin-top: 14px;
-  background: var(--bg);
-  padding: 6px 14px;
-  border-radius: 16px;
-  display: inline-block;
-}
-
-.card-formula-badge {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--primary);
-  background: #fff7ed;
-  border: 1px solid #fed7aa;
-  padding: 6px 14px;
-  border-radius: 14px;
-  margin: 10px auto;
-  display: inline-block;
+  text-align: center;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .word-title {
-  font-size: 32px !important;
-  font-weight: 700 !important;
-  color: #1a1a1a !important;
+  font-size: 38px !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
   line-height: 1.25 !important;
+  text-align: center;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-.card-desc-preview {
-  font-size: 13px;
-  color: var(--text-secondary);
-  margin-top: 10px;
-  line-height: 1.4;
+.card-desc-preview,
+.card-desc-full {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.9);
+  margin-top: 12px;
+  line-height: 1.45;
   max-width: 90%;
   margin-left: auto;
   margin-right: auto;
-}
-
-.card-desc-full {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin-top: 12px;
-  line-height: 1.45;
-  max-width: 92%;
-  margin-left: auto;
-  margin-right: auto;
+  text-align: center;
 }
 
 .card-flip-prompt {

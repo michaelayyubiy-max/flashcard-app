@@ -301,62 +301,65 @@ export function renderNumbers(app, router) {
     function startFlashcardSession(cards, startBound, endBound) {
       let currentIndex = 0;
       let isFlipped = false;
-      const startTime = performance.now();
-      let timerInterval = null;
+      const totalSessionStartTime = performance.now();
+      let cardStartTime = performance.now();
+      let cardTimerInterval = null;
       let autoPlayTimer = null;
       let isPaused = false;
-
-      // Start Stopwatch
-      timerInterval = setInterval(() => {
-        if (isPaused) return;
-        const elapsed = performance.now() - startTime;
-        const el = document.getElementById('num-timer');
-        if (el) el.textContent = formatStopwatch(elapsed);
-      }, 33);
+      let pauseStartTime = 0;
+      let pausedDurationOnCard = 0;
 
       function stopTimers() {
-        if (timerInterval) clearInterval(timerInterval);
+        if (cardTimerInterval) clearInterval(cardTimerInterval);
         if (autoPlayTimer) clearTimeout(autoPlayTimer);
+      }
+
+      function startCardStopwatch() {
+        if (cardTimerInterval) clearInterval(cardTimerInterval);
+        cardStartTime = performance.now();
+        pausedDurationOnCard = 0;
+
+        const el = document.getElementById('card-stopwatch');
+        if (el) el.textContent = formatStopwatchMilli(0);
+
+        cardTimerInterval = setInterval(() => {
+          if (isPaused) return;
+          const currentElapsed = performance.now() - cardStartTime - pausedDurationOnCard;
+          const target = document.getElementById('card-stopwatch');
+          if (target) {
+            target.textContent = formatStopwatchMilli(currentElapsed);
+          }
+        }, 16);
       }
 
       function renderCard() {
         const item = cards[currentIndex];
         isFlipped = false;
-        const elapsed = performance.now() - startTime;
         const progressPercent = Math.round(((currentIndex + 1) / cards.length) * 100);
 
+        // Clean card contents: No badges, no formulas, no prompts
         const frontContent = cardDirection === 'num-to-word'
           ? `
-            <div class="card-num-badge">MILLENNIUM</div>
             <div class="card-text num-huge">${item.number}</div>
-            <div class="card-formula-hint">${item.formula || ''}</div>
-            <div class="card-flip-prompt">Aylantirish uchun bosing 🔄</div>
           `
           : `
-            <div class="card-num-badge">OBRAZ</div>
             <div class="card-text word-title">${escapeHtml(item.word)}</div>
-            <div class="card-desc-preview">${escapeHtml(item.desc || '')}</div>
-            <div class="card-flip-prompt">Raqamni ko'rish 🔄</div>
+            ${item.desc ? `<div class="card-desc-preview">${escapeHtml(item.desc)}</div>` : ''}
           `;
 
         const backContent = cardDirection === 'num-to-word'
           ? `
-            <div class="card-num-badge" style="background:#27ae60;">OBRAZ</div>
             <div class="card-text word-title">${escapeHtml(item.word)}</div>
-            <div class="card-formula-badge">${item.formula || ''}</div>
-            <div class="card-desc-full">${escapeHtml(item.desc || '')}</div>
+            ${item.desc ? `<div class="card-desc-full">${escapeHtml(item.desc)}</div>` : ''}
           `
           : `
-            <div class="card-num-badge" style="background:#27ae60;">RAQAM</div>
             <div class="card-text num-huge">${item.number}</div>
-            <div class="card-formula-badge">${item.formula || ''}</div>
-            <div class="card-desc-full">${escapeHtml(item.desc || '')}</div>
           `;
 
         app.innerHTML = `
           <div class="numbers-session page-enter">
             <!-- Top bar -->
-            <div class="header">
+            <div class="header" style="padding-bottom: 4px;">
               <button class="header-back" id="btn-exit-session" title="Chiqish">✕</button>
               <div class="session-range-tag">
                 ${String(startBound).padStart(3, '0')}–${String(endBound).padStart(3, '0')}
@@ -364,19 +367,23 @@ export function renderNumbers(app, router) {
               <button class="header-action" id="btn-finish-session">Tugatish</button>
             </div>
 
-            <!-- Stopwatch & Progress -->
-            <div class="session-stats-bar">
-              <div class="session-timer" id="num-timer">${formatStopwatch(elapsed)}</div>
-              <div class="session-counter"><strong>${currentIndex + 1}</strong> / ${cards.length}</div>
-            </div>
-
             <!-- Progress bar -->
             <div class="session-progress-track">
               <div class="session-progress-fill" style="width: ${progressPercent}%;"></div>
             </div>
 
+            <!-- Counter row -->
+            <div class="session-counter-row">
+              <span class="session-counter"><strong>${currentIndex + 1}</strong> / ${cards.length}</span>
+            </div>
+
+            <!-- Sekundomer (5-rasmdagidek: 00:04:720) -->
+            <div class="session-stopwatch-box">
+              <div class="card-stopwatch" id="card-stopwatch">00:00:000</div>
+            </div>
+
             <!-- 3D Flashcard container -->
-            <div class="flashcard-page" style="padding-top: 10px;">
+            <div class="flashcard-page" style="padding-top: 4px;">
               <div class="card-container">
                 <div class="card-wrapper" id="num-card">
                   <div class="card-inner">
@@ -419,7 +426,10 @@ export function renderNumbers(app, router) {
           fitAllCardTexts(document.getElementById('num-card'));
         });
 
-        // Flip Card
+        // Start / Reset card stopwatch for this new card!
+        startCardStopwatch();
+
+        // Flip Card (does not reset card stopwatch)
         const cardEl = document.getElementById('num-card');
         const doFlip = () => {
           isFlipped = !isFlipped;
@@ -430,7 +440,7 @@ export function renderNumbers(app, router) {
         cardEl.addEventListener('click', doFlip);
         document.getElementById('btn-card-flip').addEventListener('click', doFlip);
 
-        // Previous
+        // Previous (resets card stopwatch from zero)
         document.getElementById('btn-card-prev').addEventListener('click', () => {
           if (currentIndex > 0) {
             if (autoPlayTimer) clearTimeout(autoPlayTimer);
@@ -439,7 +449,7 @@ export function renderNumbers(app, router) {
           }
         });
 
-        // Next
+        // Next (resets card stopwatch from zero)
         document.getElementById('btn-card-next').addEventListener('click', () => {
           goNext();
         });
@@ -447,11 +457,19 @@ export function renderNumbers(app, router) {
         // Exit / Finish
         document.getElementById('btn-exit-session').addEventListener('click', () => {
           stopTimers();
+          if (window._numKeyHandler) {
+            document.removeEventListener('keydown', window._numKeyHandler);
+            window._numKeyHandler = null;
+          }
           renderMain();
         });
         document.getElementById('btn-finish-session').addEventListener('click', () => {
           stopTimers();
-          showResults(cards.length, performance.now() - startTime);
+          if (window._numKeyHandler) {
+            document.removeEventListener('keydown', window._numKeyHandler);
+            window._numKeyHandler = null;
+          }
+          showResults(cards.length, performance.now() - totalSessionStartTime);
         });
 
         // Auto mode toggle pause
@@ -460,8 +478,14 @@ export function renderNumbers(app, router) {
           pauseBtn.addEventListener('click', () => {
             isPaused = !isPaused;
             pauseBtn.textContent = isPaused ? '▶️ Davom etish' : '⏸️ Pauza';
-            if (!isPaused && playMode === 'auto') {
-              scheduleAutoNext();
+            if (isPaused) {
+              pauseStartTime = performance.now();
+              if (autoPlayTimer) clearTimeout(autoPlayTimer);
+            } else {
+              pausedDurationOnCard += (performance.now() - pauseStartTime);
+              if (playMode === 'auto') {
+                scheduleAutoNext();
+              }
             }
           });
         }
@@ -487,7 +511,7 @@ export function renderNumbers(app, router) {
             renderCard();
           } else {
             stopTimers();
-            showResults(cards.length, performance.now() - startTime);
+            showResults(cards.length, performance.now() - totalSessionStartTime);
           }
         }
 
@@ -867,6 +891,14 @@ function formatStopwatch(ms) {
   const seconds = totalSeconds % 60;
   const hundredths = Math.floor((ms % 1000) / 10);
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(hundredths).padStart(2, '0')}`;
+}
+
+function formatStopwatchMilli(ms) {
+  const totalMs = Math.max(0, Math.floor(ms));
+  const minutes = Math.floor(totalMs / 60000);
+  const seconds = Math.floor((totalMs % 60000) / 1000);
+  const millis = totalMs % 1000;
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}:${String(millis).padStart(3, '0')}`;
 }
 
 function escapeHtml(text) {
